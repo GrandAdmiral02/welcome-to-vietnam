@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,6 +10,7 @@ import { Heart, MessageCircle, User, Settings, LogOut, Sparkles } from 'lucide-r
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -114,7 +115,11 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Cập nhật thông tin cá nhân của bạn
               </p>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/profile')}
+              >
                 Chỉnh sửa hồ sơ
               </Button>
             </CardContent>
