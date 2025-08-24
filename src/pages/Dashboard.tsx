@@ -44,7 +44,7 @@ const Dashboard = () => {
             <div className="bg-primary rounded-full p-2">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">Lithmatch</span>
+            <span className="text-xl font-bold">Hippo Lovely</span>
           </div>
           
           <div className="flex items-center gap-4">
@@ -138,7 +138,7 @@ const Dashboard = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
-                  <p className="font-medium">Chào mừng đến với Lithmatch!</p>
+                  <p className="font-medium">Chào mừng đến với Hippo Lovely!</p>
                   <p className="text-sm text-muted-foreground">
                     Hãy hoàn thiện hồ sơ của bạn để bắt đầu kết nối
                   </p>

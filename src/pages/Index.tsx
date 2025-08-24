@@ -16,7 +16,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary">Lithmatch</h1>
+            <h1 className="text-2xl font-bold text-primary">Hippo Lovely</h1>
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ const Index = () => {
             Khám phá thế giới kết nối
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Tìm kiếm những mối quan hệ ý nghĩa, kết bạn và khám phá tình yêu với Lithmatch
+            Tìm kiếm những mối quan hệ ý nghĩa, kết bạn và khám phá tình yêu với Hippo Lovely
           </p>
         </div>
 

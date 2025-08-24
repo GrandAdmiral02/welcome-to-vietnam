@@ -37,7 +37,7 @@ const Auth = () => {
     } else {
       toast({
         title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn quay lại Lithmatch!"
+        description: "Chào mừng bạn quay lại Hippo Lovely!"
       });
     }
     
@@ -81,7 +81,7 @@ const Auth = () => {
             </div>
             <Sparkles className="h-6 w-6 text-accent animate-pulse" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Lithmatch</h1>
+          <h1 className="text-3xl font-bold text-foreground">Hippo Lovely</h1>
           <p className="text-muted-foreground mt-2">Kết nối những tâm hồn đồng điệu</p>
         </div>
 
