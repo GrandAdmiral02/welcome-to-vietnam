@@ -141,7 +141,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_age: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      is_target_profile_complete: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
+      is_user_profile_complete: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
