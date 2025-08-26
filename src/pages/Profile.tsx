@@ -10,10 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, X, Plus, Heart, Save, ArrowLeft, CalendarIcon } from 'lucide-react';
+import { Camera, X, Plus, Heart, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
@@ -435,36 +434,14 @@ export default function Profile() {
             
             <div>
               <Label>Ngày sinh</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !profile.birth_date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {profile.birth_date ? (
-                      format(new Date(profile.birth_date), "dd/MM/yyyy")
-                    ) : (
-                      <span>Chọn ngày sinh</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={profile.birth_date ? new Date(profile.birth_date) : undefined}
-                    onSelect={handleBirthDateChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker
+                date={profile.birth_date ? new Date(profile.birth_date) : undefined}
+                onDateChange={handleBirthDateChange}
+                placeholder="Chọn ngày sinh"
+                disabled={(date) =>
+                  date > new Date() || date < new Date("1900-01-01")
+                }
+              />
             </div>
 
             <div>
