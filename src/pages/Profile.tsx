@@ -500,12 +500,17 @@ export default function Profile() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="lookingFor">Loại kết nối mong muốn</Label>
-              <Input
-                id="lookingFor"
-                value={profile.looking_for || ''}
-                onChange={(e) => setProfile({ ...profile, looking_for: e.target.value })}
-                placeholder="Ví dụ: Bạn bè, Tình yêu, Kết bạn..."
-              />
+              <Select value={profile.looking_for || ''} onValueChange={(value) => setProfile({ ...profile, looking_for: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn loại kết nối" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="friendship">Bạn bè</SelectItem>
+                  <SelectItem value="dating">Hẹn hò</SelectItem>
+                  <SelectItem value="serious_relationship">Tình yêu nghiêm túc</SelectItem>
+                  <SelectItem value="networking">Kết nối công việc</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
