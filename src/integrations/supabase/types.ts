@@ -99,12 +99,15 @@ export type Database = {
           age: number | null
           avatar_url: string | null
           bio: string | null
+          birth_date: string | null
           created_at: string
           full_name: string
+          gender: string | null
           id: string
           interests: string[] | null
           location: string | null
           looking_for: string | null
+          looking_for_gender: string | null
           updated_at: string
           user_id: string
         }
@@ -112,12 +115,15 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           created_at?: string
           full_name: string
+          gender?: string | null
           id?: string
           interests?: string[] | null
           location?: string | null
           looking_for?: string | null
+          looking_for_gender?: string | null
           updated_at?: string
           user_id: string
         }
@@ -125,12 +131,15 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           created_at?: string
           full_name?: string
+          gender?: string | null
           id?: string
           interests?: string[] | null
           location?: string | null
           looking_for?: string | null
+          looking_for_gender?: string | null
           updated_at?: string
           user_id?: string
         }

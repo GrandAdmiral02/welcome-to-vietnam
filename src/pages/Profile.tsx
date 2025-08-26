@@ -8,9 +8,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, X, Plus, Heart, Save, ArrowLeft } from 'lucide-react';
+import { Camera, X, Plus, Heart, Save, ArrowLeft, CalendarIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { vietnamProvinces } from '@/data/vietnamProvinces';
+import { cn } from '@/lib/utils';
 
 interface Profile {
   id: string;
@@ -22,6 +29,9 @@ interface Profile {
   interests: string[] | null;
   looking_for: string | null;
   avatar_url: string | null;
+  gender: string | null;
+  birth_date: string | null;
+  looking_for_gender: string | null;
 }
 
 interface Photo {
@@ -101,6 +111,32 @@ export default function Profile() {
     }
   };
 
+  const calculateAge = (birthDate: string) => {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const handleBirthDateChange = (date: Date | undefined) => {
+    if (!date || !profile) return;
+    
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const calculatedAge = calculateAge(formattedDate);
+    
+    setProfile({
+      ...profile,
+      birth_date: formattedDate,
+      age: calculatedAge
+    });
+  };
+
   const handleSaveProfile = async () => {
     if (!profile) return;
 
@@ -114,7 +150,10 @@ export default function Profile() {
           bio: profile.bio,
           location: profile.location,
           interests: profile.interests,
-          looking_for: profile.looking_for
+          looking_for: profile.looking_for,
+          gender: profile.gender,
+          birth_date: profile.birth_date,
+          looking_for_gender: profile.looking_for_gender
         })
         .eq('user_id', user?.id);
 
@@ -375,7 +414,59 @@ export default function Profile() {
                 placeholder="Nhập tên của bạn"
               />
             </div>
+
+            <div>
+              <Label>Giới tính</Label>
+              <RadioGroup 
+                value={profile.gender || ''} 
+                onValueChange={(value) => setProfile({ ...profile, gender: value })}
+                className="flex flex-row space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="nam" id="nam" />
+                  <Label htmlFor="nam">Nam</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="nữ" id="nữ" />
+                  <Label htmlFor="nữ">Nữ</Label>
+                </div>
+              </RadioGroup>
+            </div>
             
+            <div>
+              <Label>Ngày sinh</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !profile.birth_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {profile.birth_date ? (
+                      format(new Date(profile.birth_date), "dd/MM/yyyy")
+                    ) : (
+                      <span>Chọn ngày sinh</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={profile.birth_date ? new Date(profile.birth_date) : undefined}
+                    onSelect={handleBirthDateChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <div>
               <Label htmlFor="age">Tuổi</Label>
               <Input
@@ -385,18 +476,30 @@ export default function Profile() {
                 max="100"
                 value={profile.age || ''}
                 onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || null })}
-                placeholder="Nhập tuổi của bạn"
+                placeholder="Tuổi sẽ được tính tự động từ ngày sinh"
+                disabled={!!profile.birth_date}
               />
+              {profile.birth_date && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Tuổi được tính tự động từ ngày sinh
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor="location">Địa điểm</Label>
-              <Input
-                id="location"
-                value={profile.location || ''}
-                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                placeholder="Thành phố của bạn"
-              />
+              <Select value={profile.location || ''} onValueChange={(value) => setProfile({ ...profile, location: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vietnamProvinces.map((province) => (
+                    <SelectItem key={province} value={province}>
+                      {province}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -409,15 +512,45 @@ export default function Profile() {
                 rows={4}
               />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Connection Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tìm kiếm kết nối</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="lookingFor">Tìm kiếm</Label>
+              <Label htmlFor="lookingFor">Loại kết nối mong muốn</Label>
               <Input
                 id="lookingFor"
                 value={profile.looking_for || ''}
                 onChange={(e) => setProfile({ ...profile, looking_for: e.target.value })}
-                placeholder="Bạn đang tìm kiếm điều gì?"
+                placeholder="Ví dụ: Bạn bè, Tình yêu, Kết bạn..."
               />
+            </div>
+
+            <div>
+              <Label>Đối tượng muốn kết nối</Label>
+              <RadioGroup 
+                value={profile.looking_for_gender || ''} 
+                onValueChange={(value) => setProfile({ ...profile, looking_for_gender: value })}
+                className="flex flex-row space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="nam" id="looking-nam" />
+                  <Label htmlFor="looking-nam">Nam</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="nữ" id="looking-nữ" />
+                  <Label htmlFor="looking-nữ">Nữ</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="cả hai" id="looking-both" />
+                  <Label htmlFor="looking-both">Cả hai</Label>
+                </div>
+              </RadioGroup>
             </div>
           </CardContent>
         </Card>
