@@ -123,10 +123,10 @@ const Dashboard = () => {
               variant="ghost" 
               size="sm"
               className="relative"
-              onClick={() => navigate('/messages')}
+              onClick={() => navigate('/matches')}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Tin nhắn
+              Kết nối
               {stats.newMessages > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-destructive">
                   {stats.newMessages}
@@ -243,20 +243,20 @@ const Dashboard = () => {
           <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group">
             <CardHeader className="text-center">
               <div className="bg-accent/10 rounded-full p-4 w-fit mx-auto mb-2 group-hover:bg-accent/20 transition-colors">
-                <MessageCircle className="h-12 w-12 text-accent" />
+                <Users className="h-12 w-12 text-accent" />
               </div>
-              <CardTitle className="text-xl">Tin nhắn</CardTitle>
+              <CardTitle className="text-xl">Kết nối</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground mb-4">
-                Trò chuyện với những kết nối của bạn
+                Xem những người đã kết nối với bạn
               </p>
               <Button 
                 variant="secondary" 
                 className="w-full"
-                onClick={() => navigate('/messages')}
+                onClick={() => navigate('/matches')}
               >
-                Xem tin nhắn
+                Xem kết nối
                 {stats.newMessages > 0 && (
                   <Badge className="ml-2 bg-destructive">
                     {stats.newMessages}
