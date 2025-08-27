@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart, MessageCircle, ArrowLeft, Users, Sparkles, MapPin, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 
 interface Match {
   id: string;
@@ -256,7 +255,7 @@ export default function Matches() {
                       )}
 
                       <div className="text-xs text-muted-foreground">
-                        Kết nối từ {format(new Date(match.created_at), 'dd/MM/yyyy', { locale: vi })}
+                        Kết nối từ {format(new Date(match.created_at), 'dd/MM/yyyy')}
                       </div>
                     </div>
                   </CardContent>
