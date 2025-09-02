@@ -234,7 +234,10 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Tìm kiếm những người phù hợp với bạn
               </p>
-              <Button className="w-full bg-[var(--gradient-primary)] hover:opacity-90">
+              <Button 
+                className="w-full bg-[var(--gradient-primary)] hover:opacity-90"
+                onClick={() => navigate('/discover')}
+              >
                 Bắt đầu khám phá
               </Button>
             </CardContent>
