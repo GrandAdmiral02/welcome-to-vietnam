@@ -257,9 +257,9 @@ const Dashboard = () => {
               <Button 
                 variant="secondary" 
                 className="w-full"
-                onClick={() => navigate('/matches')}
+                onClick={() => navigate('/messages')}
               >
-                Xem kết nối
+                Xem tin nhắn
                 {stats.newMessages > 0 && (
                   <Badge className="ml-2 bg-destructive">
                     {stats.newMessages}
