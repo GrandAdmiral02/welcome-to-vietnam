@@ -5,8 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, X, ArrowLeft, MapPin, Calendar, Sparkles, Camera } from 'lucide-react';
+import { Heart, X, ArrowLeft, MapPin, Calendar, Sparkles, Camera, Filter, MoreVertical, Flag, UserX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AdvancedFilters } from '@/components/AdvancedFilters';
+import { ReportDialog } from '@/components/ReportDialog';
+import { BlockDialog } from '@/components/BlockDialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface Profile {
   id: string;
@@ -24,11 +28,33 @@ interface Profile {
   }>;
 }
 
+interface FilterSettings {
+  ageRange: [number, number];
+  distance: number;
+  gender: string;
+  location: string;
+  interests: string[];
+  showOnlyVerified: boolean;
+  showOnlyWithPhotos: boolean;
+}
+
 const Discover = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [filters, setFilters] = useState<FilterSettings>({
+    ageRange: [18, 65],
+    distance: 50,
+    gender: 'all',
+    location: '',
+    interests: [],
+    showOnlyVerified: false,
+    showOnlyWithPhotos: true
+  });
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,12 +65,13 @@ const Discover = () => {
     }
   }, [user]);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = async (appliedFilters?: FilterSettings) => {
     try {
       setLoading(true);
+      const currentFilters = appliedFilters || filters;
       
-      // Fetch profiles with photos
-      const { data: profilesData, error: profilesError } = await supabase
+      // Build query with filters
+      let query = supabase
         .from('profiles')
         .select(`
           id,
@@ -54,11 +81,30 @@ const Discover = () => {
           bio,
           location,
           interests,
-          avatar_url
+          avatar_url,
+          gender
         `)
         .neq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .order('created_at', { ascending: false });
+
+      // Apply age filter
+      if (currentFilters.ageRange[0] > 18 || currentFilters.ageRange[1] < 65) {
+        query = query
+          .gte('age', currentFilters.ageRange[0])
+          .lte('age', currentFilters.ageRange[1]);
+      }
+
+      // Apply gender filter
+      if (currentFilters.gender !== 'all') {
+        query = query.eq('gender', currentFilters.gender);
+      }
+
+      // Apply location filter
+      if (currentFilters.location) {
+        query = query.eq('location', currentFilters.location);
+      }
+
+      const { data: profilesData, error: profilesError } = await query.limit(50);
 
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
@@ -70,7 +116,7 @@ const Discover = () => {
         return;
       }
 
-      // Fetch photos for each profile
+      // Fetch photos for each profile and apply additional filters
       const profilesWithPhotos = await Promise.all(
         (profilesData || []).map(async (profile) => {
           const { data: photos } = await supabase
@@ -86,7 +132,25 @@ const Discover = () => {
         })
       );
 
-      setProfiles(profilesWithPhotos.filter(p => p.photos.length > 0));
+      // Apply client-side filters
+      let filteredProfiles = profilesWithPhotos;
+
+      // Filter by photos requirement
+      if (currentFilters.showOnlyWithPhotos) {
+        filteredProfiles = filteredProfiles.filter(p => p.photos.length > 0);
+      }
+
+      // Filter by interests
+      if (currentFilters.interests.length > 0) {
+        filteredProfiles = filteredProfiles.filter(p => 
+          p.interests && currentFilters.interests.some(interest => 
+            p.interests.includes(interest)
+          )
+        );
+      }
+
+      setProfiles(filteredProfiles);
+      setCurrentIndex(0); // Reset to first profile
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -97,6 +161,11 @@ const Discover = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplyFilters = (newFilters: FilterSettings) => {
+    setFilters(newFilters);
+    fetchProfiles(newFilters);
   };
 
   const handleAction = async (action: 'like' | 'pass') => {
@@ -145,6 +214,11 @@ const Discover = () => {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleBlockComplete = () => {
+    // Move to next profile after blocking
+    setCurrentIndex(prev => prev + 1);
   };
 
   const currentProfile = profiles[currentIndex];
@@ -197,8 +271,19 @@ const Discover = () => {
               <ArrowLeft className="w-4 h-4" />
               Khám phá
             </Button>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{currentIndex + 1} / {profiles.length}</span>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(true)}
+                className="gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                Bộ lọc
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                {currentIndex + 1} / {profiles.length}
+              </div>
             </div>
           </div>
         </div>
@@ -223,13 +308,40 @@ const Discover = () => {
             
             {/* Photo count indicator */}
             {currentProfile.photos.length > 1 && (
-              <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+              <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                 {currentProfile.photos.length} ảnh
               </div>
             )}
 
             {/* Gradient overlay */}
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
+            
+            {/* Profile actions menu */}
+            <div className="absolute top-4 right-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="glass">
+                  <DropdownMenuItem 
+                    onClick={() => setShowReportDialog(true)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Flag className="h-4 w-4 mr-2" />
+                    Báo cáo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setShowBlockDialog(true)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <UserX className="h-4 w-4 mr-2" />
+                    Chặn
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             
             {/* Basic info overlay */}
             <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -297,6 +409,35 @@ const Discover = () => {
           Vuốt hoặc bấm để tiếp tục
         </div>
       </div>
+
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
+      />
+
+      {/* Report Dialog */}
+      {currentProfile && (
+        <ReportDialog
+          isOpen={showReportDialog}
+          onClose={() => setShowReportDialog(false)}
+          reportedUserId={currentProfile.user_id}
+          reportedUserName={currentProfile.full_name}
+        />
+      )}
+
+      {/* Block Dialog */}
+      {currentProfile && (
+        <BlockDialog
+          isOpen={showBlockDialog}
+          onClose={() => setShowBlockDialog(false)}
+          blockedUserId={currentProfile.user_id}
+          blockedUserName={currentProfile.full_name}
+          onBlockComplete={handleBlockComplete}
+        />
+      )}
     </div>
   );
 };

@@ -139,6 +139,14 @@ const Dashboard = () => {
                 {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0)}
               </AvatarFallback>
             </Avatar>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Cài đặt
+            </Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Đăng xuất

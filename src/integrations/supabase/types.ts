@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -97,10 +121,13 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          age_preference_max: number | null
+          age_preference_min: number | null
           avatar_url: string | null
           bio: string | null
           birth_date: string | null
           created_at: string
+          distance_preference: number | null
           full_name: string
           gender: string | null
           id: string
@@ -113,10 +140,13 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          age_preference_max?: number | null
+          age_preference_min?: number | null
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
           created_at?: string
+          distance_preference?: number | null
           full_name: string
           gender?: string | null
           id?: string
@@ -129,10 +159,13 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          age_preference_max?: number | null
+          age_preference_min?: number | null
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
           created_at?: string
+          distance_preference?: number | null
           full_name?: string
           gender?: string | null
           id?: string
@@ -140,6 +173,78 @@ export type Database = {
           location?: string | null
           looking_for?: string | null
           looking_for_gender?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          hide_profile_from_feed: boolean | null
+          id: string
+          only_show_verified: boolean | null
+          show_age: boolean | null
+          show_distance: boolean | null
+          show_last_active: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hide_profile_from_feed?: boolean | null
+          id?: string
+          only_show_verified?: boolean | null
+          show_age?: boolean | null
+          show_distance?: boolean | null
+          show_last_active?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hide_profile_from_feed?: boolean | null
+          id?: string
+          only_show_verified?: boolean | null
+          show_age?: boolean | null
+          show_distance?: boolean | null
+          show_last_active?: boolean | null
           updated_at?: string
           user_id?: string
         }
