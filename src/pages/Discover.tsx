@@ -183,9 +183,9 @@ const Discover = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+      <div className="sticky top-0 z-10 glass border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -205,8 +205,8 @@ const Discover = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 max-w-md">
-        <Card className="overflow-hidden shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
+      <div className="container mx-auto px-4 py-6 max-w-md animate-scale-in">
+        <Card className="overflow-hidden shadow-glow border-0 card-hover">
           {/* Photo */}
           <div className="relative aspect-[3/4] overflow-hidden">
             {currentProfile.photos[0] ? (
@@ -271,24 +271,25 @@ const Discover = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-6 mt-6">
+        <div className="flex justify-center gap-8 mt-8">
           <Button
             size="lg"
             variant="outline"
-            className="w-16 h-16 rounded-full border-2 hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
+            className="w-20 h-20 rounded-full border-2 hover:bg-destructive/10 hover:border-destructive hover:text-destructive hover:scale-110 transition-all shadow-card"
             onClick={() => handleAction('pass')}
             disabled={actionLoading}
           >
-            <X className="w-6 h-6" />
+            <X className="w-8 h-8" />
           </Button>
           
           <Button
             size="lg"
-            className="w-16 h-16 rounded-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 border-0 shadow-lg"
+            variant="hero"
+            className="w-20 h-20 rounded-full bg-gradient-primary border-0 shadow-glow hover:scale-110"
             onClick={() => handleAction('like')}
             disabled={actionLoading}
           >
-            <Heart className="w-6 h-6" />
+            <Heart className="w-8 h-8" />
           </Button>
         </div>
 

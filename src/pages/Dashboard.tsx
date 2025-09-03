@@ -105,9 +105,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--gradient-bg)]">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 p-4 sticky top-0 z-50">
+      <header className="glass border-b p-4 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-[var(--gradient-primary)] rounded-full p-2">
@@ -149,20 +149,20 @@ const Dashboard = () => {
 
       <div className="max-w-6xl mx-auto p-6">
         {/* Welcome Section */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-2 bg-[var(--gradient-primary)] bg-clip-text text-transparent">
+        <div className="mb-8 text-center animate-fade-in">
+          <h1 className="text-5xl font-bold mb-4 gradient-text">
             Chào mừng, {user.user_metadata?.full_name || 'bạn'}! 
-            <Sparkles className="inline h-6 w-6 ml-2 text-primary animate-pulse" />
+            <Sparkles className="inline h-8 w-8 ml-3 text-accent animate-pulse float" />
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-xl leading-relaxed">
             Khám phá những kết nối mới và tìm thấy người đặc biệt của bạn
           </p>
         </div>
 
         {/* Profile Completion Banner */}
         {profileCompletion < 100 && (
-          <Card className="mb-8 bg-[var(--gradient-primary)] text-primary-foreground border-0">
-            <CardContent className="p-6">
+          <Card className="mb-8 bg-gradient-primary text-primary-foreground border-0 pulse-glow">
+            <CardContent className="p-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-semibold text-lg">Hoàn thiện hồ sơ của bạn</h3>
@@ -189,41 +189,41 @@ const Dashboard = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all">
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Heart className="h-8 w-8 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <Card className="card-hover group">
+            <CardContent className="p-8 text-center">
+              <div className="bg-primary/10 rounded-full p-4 w-fit mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <Heart className="h-10 w-10 text-primary" />
               </div>
-              <div className="text-2xl font-bold text-primary">{stats.totalMatches}</div>
-              <p className="text-sm text-muted-foreground">Kết nối thành công</p>
+              <div className="text-3xl font-bold text-primary mb-2">{stats.totalMatches}</div>
+              <p className="text-muted-foreground">Kết nối thành công</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all">
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <MessageCircle className="h-8 w-8 text-accent" />
+          <Card className="card-hover group">
+            <CardContent className="p-8 text-center">
+              <div className="bg-accent/10 rounded-full p-4 w-fit mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                <MessageCircle className="h-10 w-10 text-accent" />
               </div>
-              <div className="text-2xl font-bold text-accent">{stats.newMessages}</div>
-              <p className="text-sm text-muted-foreground">Tin nhắn mới</p>
+              <div className="text-3xl font-bold text-accent mb-2">{stats.newMessages}</div>
+              <p className="text-muted-foreground">Tin nhắn mới</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all">
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <TrendingUp className="h-8 w-8 text-emerald-500" />
+          <Card className="card-hover group">
+            <CardContent className="p-8 text-center">
+              <div className="bg-emerald-500/10 rounded-full p-4 w-fit mx-auto mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                <TrendingUp className="h-10 w-10 text-emerald-500" />
               </div>
-              <div className="text-2xl font-bold text-emerald-500">{stats.profileViews}</div>
-              <p className="text-sm text-muted-foreground">Lượt xem hồ sơ</p>
+              <div className="text-3xl font-bold text-emerald-500 mb-2">{stats.profileViews}</div>
+              <p className="text-muted-foreground">Lượt xem hồ sơ</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <Card className="card-hover group cursor-pointer">
             <CardHeader className="text-center">
               <div className="bg-primary/10 rounded-full p-4 w-fit mx-auto mb-2 group-hover:bg-primary/20 transition-colors">
                 <Heart className="h-12 w-12 text-primary" />
@@ -235,7 +235,8 @@ const Dashboard = () => {
                 Tìm kiếm những người phù hợp với bạn
               </p>
               <Button 
-                className="w-full bg-[var(--gradient-primary)] hover:opacity-90"
+                variant="hero"
+                className="w-full"
                 onClick={() => navigate('/discover')}
               >
                 Bắt đầu khám phá
@@ -243,7 +244,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group">
+          <Card className="card-hover group cursor-pointer">
             <CardHeader className="text-center">
               <div className="bg-accent/10 rounded-full p-4 w-fit mx-auto mb-2 group-hover:bg-accent/20 transition-colors">
                 <Users className="h-12 w-12 text-accent" />
@@ -255,7 +256,7 @@ const Dashboard = () => {
                 Xem những người đã kết nối với bạn
               </p>
               <Button 
-                variant="secondary" 
+                variant="premium" 
                 className="w-full"
                 onClick={() => navigate('/messages')}
               >
@@ -269,7 +270,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group">
+          <Card className="card-hover group cursor-pointer">
             <CardHeader className="text-center">
               <div className="bg-muted/50 rounded-full p-4 w-fit mx-auto mb-2 group-hover:bg-muted/70 transition-colors">
                 <User className="h-12 w-12 text-foreground" />
