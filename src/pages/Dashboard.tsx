@@ -191,63 +191,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card 
-          className="card-hover cursor-pointer group"
-          onClick={() => navigate('/discover')}
-        >
-          <CardContent className="p-6 text-center">
-            <div className="bg-primary/10 rounded-full p-3 w-fit mx-auto mb-3 group-hover:bg-primary/20 transition-colors">
-              <Heart className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Khám phá</h3>
-            <p className="text-sm text-muted-foreground">Tìm người phù hợp</p>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="card-hover cursor-pointer group"
-          onClick={() => navigate('/messages')}
-        >
-          <CardContent className="p-6 text-center">
-            <div className="bg-accent/10 rounded-full p-3 w-fit mx-auto mb-3 group-hover:bg-accent/20 transition-colors">
-              <Users className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="font-semibold mb-2">Tin nhắn</h3>
-            <p className="text-sm text-muted-foreground">Chat với matches</p>
-            {stats.newMessages > 0 && (
-              <Badge className="mt-2 bg-destructive">{stats.newMessages}</Badge>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="card-hover cursor-pointer group"
-          onClick={() => navigate('/profile')}
-        >
-          <CardContent className="p-6 text-center">
-            <div className="bg-blue-500/10 rounded-full p-3 w-fit mx-auto mb-3 group-hover:bg-blue-500/20 transition-colors">
-              <Star className="h-6 w-6 text-blue-500" />
-            </div>
-            <h3 className="font-semibold mb-2">Hồ sơ</h3>
-            <p className="text-sm text-muted-foreground">Chỉnh sửa thông tin</p>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="card-hover cursor-pointer group"
-          onClick={() => navigate('/settings')}
-        >
-          <CardContent className="p-6 text-center">
-            <div className="bg-purple-500/10 rounded-full p-3 w-fit mx-auto mb-3 group-hover:bg-purple-500/20 transition-colors">
-              <Zap className="h-6 w-6 text-purple-500" />
-            </div>
-            <h3 className="font-semibold mb-2">Cài đặt</h3>
-            <p className="text-sm text-muted-foreground">Tùy chỉnh ứng dụng</p>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Tips & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
