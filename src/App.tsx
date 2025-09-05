@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Matches from "./pages/Matches";
 import Discover from "./pages/Discover";
+import Browse from "./pages/Browse";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
                           <Route path="/profile" element={<Profile />} />
                           <Route path="/matches" element={<Matches />} />
                           <Route path="/discover" element={<Discover />} />
+                          <Route path="/browse" element={<Browse />} />
                           <Route path="/messages" element={<Messages />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="*" element={<NotFound />} />

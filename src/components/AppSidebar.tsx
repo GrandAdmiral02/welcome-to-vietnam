@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles, Grid } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +22,7 @@ import {
 const menuItems = [
   { title: "Trang chủ", url: "/", icon: Heart },
   { title: "Khám phá", url: "/discover", icon: Compass },
+  { title: "Danh sách", url: "/browse", icon: Grid },
   { title: "Kết nối", url: "/matches", icon: Users },
   { title: "Tin nhắn", url: "/messages", icon: MessageCircle },
   { title: "Hồ sơ", url: "/profile", icon: User },
