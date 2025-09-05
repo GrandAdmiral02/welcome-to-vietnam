@@ -63,27 +63,10 @@ const Auth = () => {
         variant: "destructive"
       });
     } else {
-      // Gửi email xác nhận
-      try {
-        await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            email: email,
-            name: fullName
-          }
-        });
-        
-        toast({
-          title: "Đăng ký thành công!",
-          description: "Vui lòng kiểm tra email để xác thực tài khoản. Email xác nhận đã được gửi!"
-        });
-      } catch (emailError) {
-        console.error('Lỗi gửi email:', emailError);
-        toast({
-          title: "Đăng ký thành công!",
-          description: "Tài khoản đã được tạo nhưng không thể gửi email xác nhận. Vui lòng liên hệ hỗ trợ.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Đăng ký thành công!",
+        description: "Vui lòng kiểm tra email để xác thực tài khoản. Email xác nhận đã được gửi!"
+      });
     }
     
     setLoading(false);
