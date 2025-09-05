@@ -22,6 +22,7 @@ import {
 const menuItems = [
   { title: "Trang chủ", url: "/", icon: Heart },
   { title: "Khám phá", url: "/discover", icon: Compass },
+  { title: "Random Match", url: "/random-match", icon: Sparkles },
   { title: "Danh sách", url: "/browse", icon: Grid },
   { title: "Kết nối", url: "/matches", icon: Users },
   { title: "Tin nhắn", url: "/messages", icon: MessageCircle },
