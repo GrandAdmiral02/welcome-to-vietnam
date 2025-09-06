@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, MapPin, Calendar, Camera, Filter, Grid, ArrowLeft } from 'lucide-react';
+import { Search, UserPlus, ArrowLeft, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 
 interface Profile {
@@ -18,37 +16,28 @@ interface Profile {
   age: number;
   bio: string;
   location: string;
-  interests: string[];
-  avatar_url: string;
   gender: string;
-  photos: Array<{
-    id: string;
-    url: string;
-    is_primary: boolean;
-  }>;
+  avatar_url: string;
 }
 
 const Browse = () => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  const [ageRange, setAgeRange] = useState([18, 65]);
-  const [selectedGender, setSelectedGender] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      fetchProfiles();
+  const searchUsers = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
     }
-  }, [user, ageRange, selectedGender]);
 
-  const fetchProfiles = async () => {
     try {
       setLoading(true);
       
-      // Build query with filters
+      // Search by user ID or name
       let query = supabase
         .from('profiles')
         .select(`
@@ -58,54 +47,38 @@ const Browse = () => {
           age,
           bio,
           location,
-          interests,
-          avatar_url,
-          gender
+          gender,
+          avatar_url
         `)
-        .neq('user_id', user?.id)
-        .gte('age', ageRange[0])
-        .lte('age', ageRange[1])
-        .order('created_at', { ascending: false });
+        .neq('user_id', user?.id);
 
-      // Apply gender filter
-      if (selectedGender !== 'all') {
-        query = query.eq('gender', selectedGender);
+      // Check if search query is a UUID (user ID)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchQuery);
+      
+      if (isUUID) {
+        query = query.eq('user_id', searchQuery);
+      } else {
+        query = query.ilike('full_name', `%${searchQuery}%`);
       }
 
-      const { data: profilesData, error: profilesError } = await query.limit(100);
+      const { data: profilesData, error } = await query.limit(10);
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+      if (error) {
+        console.error('Error searching users:', error);
         toast({
           title: "Lỗi",
-          description: "Không thể tải danh sách hồ sơ",
+          description: "Không thể tìm kiếm người dùng",
           variant: "destructive",
         });
         return;
       }
 
-      // Fetch photos for each profile
-      const profilesWithPhotos = await Promise.all(
-        (profilesData || []).map(async (profile) => {
-          const { data: photos } = await supabase
-            .from('photos')
-            .select('id, url, is_primary')
-            .eq('user_id', profile.user_id)
-            .order('is_primary', { ascending: false });
-
-          return {
-            ...profile,
-            photos: photos || []
-          };
-        })
-      );
-
-      setProfiles(profilesWithPhotos);
+      setSearchResults(profilesData || []);
     } catch (error) {
       console.error('Error:', error);
       toast({
         title: "Lỗi",
-        description: "Có lỗi xảy ra khi tải dữ liệu",
+        description: "Có lỗi xảy ra khi tìm kiếm",
         variant: "destructive",
       });
     } finally {
@@ -113,8 +86,24 @@ const Browse = () => {
     }
   };
 
-  const handleLike = async (targetProfile: Profile) => {
+  const handleAddFriend = async (targetProfile: Profile) => {
     try {
+      // Check if a match already exists
+      const { data: existingMatch } = await supabase
+        .from('matches')
+        .select('id')
+        .or(`and(user1_id.eq.${user?.id},user2_id.eq.${targetProfile.user_id}),and(user1_id.eq.${targetProfile.user_id},user2_id.eq.${user?.id})`)
+        .single();
+
+      if (existingMatch) {
+        toast({
+          title: "Đã gửi lời mời",
+          description: "Bạn đã gửi lời mời kết bạn cho người này rồi",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('matches')
         .insert({
@@ -124,18 +113,18 @@ const Browse = () => {
         });
 
       if (error) {
-        console.error('Error creating match:', error);
+        console.error('Error creating friend request:', error);
         toast({
           title: "Lỗi",
-          description: "Không thể gửi lượt thích",
+          description: "Không thể gửi lời mời kết bạn",
           variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: "Đã thích!",
-        description: `Bạn đã thích ${targetProfile.full_name}`,
+        title: "Đã gửi lời mời!",
+        description: `Đã gửi lời mời kết bạn cho ${targetProfile.full_name}`,
       });
     } catch (error) {
       console.error('Error:', error);
@@ -147,6 +136,12 @@ const Browse = () => {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      searchUsers();
+    }
+  };
+
   const getGenderText = (gender: string) => {
     switch (gender) {
       case 'male': return 'Nam';
@@ -155,19 +150,6 @@ const Browse = () => {
       default: return '';
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center space-y-4 mt-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">Đang tải danh sách người dùng...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/50">
@@ -183,167 +165,120 @@ const Browse = () => {
                 className="gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Danh sách
+                Quay lại
               </Button>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Grid className="w-4 h-4" />
-                <span className="text-sm">{profiles.length} người dùng</span>
-              </div>
+              <h1 className="text-lg font-semibold">Thêm bạn</h1>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              Bộ lọc
-            </Button>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      {showFilters && (
-        <div className="glass border-b">
-          <div className="container mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Age Range */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold">Độ tuổi: {ageRange[0]} - {ageRange[1]} tuổi</Label>
-                <Slider
-                  value={ageRange}
-                  onValueChange={setAgeRange}
-                  min={18}
-                  max={80}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Gender */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold">Giới tính</Label>
-                <Select value={selectedGender} onValueChange={setSelectedGender}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn giới tính" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tất cả</SelectItem>
-                    <SelectItem value="male">Nam</SelectItem>
-                    <SelectItem value="female">Nữ</SelectItem>
-                    <SelectItem value="other">Khác</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
+      {/* Search */}
       <div className="container mx-auto px-4 py-6">
-        {profiles.length === 0 ? (
-          <div className="text-center space-y-6 max-w-md mx-auto mt-20">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <Grid className="w-8 h-8 text-primary" />
+        <div className="max-w-lg mx-auto space-y-6">
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Tìm kiếm người dùng</Label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Nhập ID hoặc tên người dùng..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1"
+              />
+              <Button onClick={searchUsers} disabled={loading}>
+                <Search className="w-4 h-4" />
+              </Button>
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Không tìm thấy người dùng</h2>
+            <p className="text-sm text-muted-foreground">
+              Bạn có thể tìm kiếm bằng ID người dùng hoặc tên
+            </p>
+          </div>
+
+          {/* Loading */}
+          {loading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Đang tìm kiếm...</p>
+            </div>
+          )}
+
+          {/* Search Results */}
+          {!loading && searchResults.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold">Kết quả tìm kiếm</h3>
+              <div className="space-y-3">
+                {searchResults.map((profile) => (
+                  <Card key={profile.id} className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                        {profile.avatar_url ? (
+                          <img
+                            src={profile.avatar_url}
+                            alt={profile.full_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Camera className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold truncate">{profile.full_name}</h4>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          {profile.age && <span>{profile.age} tuổi</span>}
+                          {profile.gender && <span>• {getGenderText(profile.gender)}</span>}
+                        </div>
+                        {profile.location && (
+                          <p className="text-sm text-muted-foreground truncate">{profile.location}</p>
+                        )}
+                        {profile.bio && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddFriend(profile)}
+                        className="gap-2 flex-shrink-0"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Thêm bạn
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No Results */}
+          {!loading && searchQuery && searchResults.length === 0 && (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Không tìm thấy kết quả</h3>
               <p className="text-muted-foreground">
-                Thử điều chỉnh bộ lọc để tìm thêm người dùng phù hợp.
+                Không tìm thấy người dùng nào phù hợp với từ khóa tìm kiếm.
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {profiles.map((profile) => (
-              <Card key={profile.id} className="overflow-hidden shadow-card border-0 card-hover group">
-                {/* Photo */}
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  {profile.photos[0] ? (
-                    <img
-                      src={profile.photos[0].url}
-                      alt={profile.full_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Camera className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  {/* Photo count */}
-                  {profile.photos.length > 1 && (
-                    <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
-                      {profile.photos.length} ảnh
-                    </div>
-                  )}
+          )}
 
-                  {/* Like button */}
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="bg-white/90 text-primary hover:bg-white hover:scale-110 transition-all shadow-lg"
-                      onClick={() => handleLike(profile)}
-                    >
-                      <Heart className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
-                  
-                  {/* Basic info */}
-                  <div className="absolute bottom-2 left-2 right-2 text-white">
-                    <h3 className="font-semibold text-sm truncate">
-                      {profile.full_name}, {profile.age}
-                    </h3>
-                    {profile.gender && (
-                      <p className="text-xs text-white/80">
-                        {getGenderText(profile.gender)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <CardContent className="p-3 space-y-2">
-                  {/* Location */}
-                  {profile.location && (
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-3 h-3" />
-                      <span className="text-xs truncate">{profile.location}</span>
-                    </div>
-                  )}
-
-                  {/* Bio */}
-                  {profile.bio && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {profile.bio}
-                    </p>
-                  )}
-
-                  {/* Interests */}
-                  {profile.interests && profile.interests.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {profile.interests.slice(0, 2).map((interest, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs px-1.5 py-0.5">
-                          {interest}
-                        </Badge>
-                      ))}
-                      {profile.interests.length > 2 && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                          +{profile.interests.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+          {/* Empty State */}
+          {!loading && !searchQuery && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserPlus className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Tìm kiếm bạn bè</h3>
+              <p className="text-muted-foreground">
+                Nhập ID hoặc tên người dùng để tìm và kết bạn với họ.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
