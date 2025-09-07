@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Search, UserPlus, ArrowLeft, Camera } from 'lucide-react';
+import { UserPlus, ArrowLeft, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Label } from '@/components/ui/label';
+import AdvancedSearchFilters, { SearchFilters } from '@/components/AdvancedSearchFilters';
 
 interface Profile {
   id: string;
@@ -21,23 +20,25 @@ interface Profile {
 }
 
 const Browse = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>({
+    searchQuery: '',
+    ageMin: 18,
+    ageMax: 65,
+    maxDistance: 50,
+    gender: 'all',
+    interests: []
+  });
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const searchUsers = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
     try {
       setLoading(true);
       
-      // Search by user ID or name
+      // Build query with filters
       let query = supabase
         .from('profiles')
         .select(`
@@ -48,20 +49,33 @@ const Browse = () => {
           bio,
           location,
           gender,
-          avatar_url
+          avatar_url,
+          interests
         `)
         .neq('user_id', user?.id);
 
-      // Check if search query is a UUID (user ID)
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchQuery);
-      
-      if (isUUID) {
-        query = query.eq('user_id', searchQuery);
-      } else {
-        query = query.ilike('full_name', `%${searchQuery}%`);
+      // Search by name or user ID
+      if (filters.searchQuery.trim()) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.searchQuery);
+        
+        if (isUUID) {
+          query = query.eq('user_id', filters.searchQuery);
+        } else {
+          query = query.ilike('full_name', `%${filters.searchQuery}%`);
+        }
       }
 
-      const { data: profilesData, error } = await query.limit(10);
+      // Age filter
+      if (filters.ageMin > 18 || filters.ageMax < 65) {
+        query = query.gte('age', filters.ageMin).lte('age', filters.ageMax);
+      }
+
+      // Gender filter
+      if (filters.gender !== 'all') {
+        query = query.eq('gender', filters.gender);
+      }
+
+      const { data: profilesData, error } = await query.limit(20);
 
       if (error) {
         console.error('Error searching users:', error);
@@ -73,7 +87,19 @@ const Browse = () => {
         return;
       }
 
-      setSearchResults(profilesData || []);
+      // Client-side filtering for interests
+      let filteredResults = profilesData || [];
+      
+      if (filters.interests.length > 0) {
+        filteredResults = filteredResults.filter(profile => {
+          if (!profile.interests || !Array.isArray(profile.interests)) return false;
+          return filters.interests.some(interest => 
+            profile.interests.includes(interest)
+          );
+        });
+      }
+
+      setSearchResults(filteredResults);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -136,11 +162,6 @@ const Browse = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      searchUsers();
-    }
-  };
 
   const getGenderText = (gender: string) => {
     switch (gender) {
@@ -173,28 +194,15 @@ const Browse = () => {
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <div className="container mx-auto px-4 py-6">
-        <div className="max-w-lg mx-auto space-y-6">
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Tìm kiếm người dùng</Label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Nhập ID hoặc tên người dùng..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
-              <Button onClick={searchUsers} disabled={loading}>
-                <Search className="w-4 h-4" />
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Bạn có thể tìm kiếm bằng ID người dùng hoặc tên
-            </p>
-          </div>
+        <div className="max-w-2xl mx-auto space-y-6">
+          <AdvancedSearchFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onSearch={searchUsers}
+            loading={loading}
+          />
 
           {/* Loading */}
           {loading && (
@@ -254,27 +262,27 @@ const Browse = () => {
           )}
 
           {/* No Results */}
-          {!loading && searchQuery && searchResults.length === 0 && (
+          {!loading && searchResults.length === 0 && (filters.searchQuery || filters.ageMin > 18 || filters.ageMax < 65 || filters.gender !== 'all' || filters.interests.length > 0) && (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-primary" />
+                <UserPlus className="w-8 h-8 text-primary" />
               </div>
               <h3 className="font-semibold mb-2">Không tìm thấy kết quả</h3>
               <p className="text-muted-foreground">
-                Không tìm thấy người dùng nào phù hợp với từ khóa tìm kiếm.
+                Không tìm thấy người dùng nào phù hợp với bộ lọc đã chọn.
               </p>
             </div>
           )}
 
           {/* Empty State */}
-          {!loading && !searchQuery && (
+          {!loading && searchResults.length === 0 && !filters.searchQuery && filters.ageMin === 18 && filters.ageMax === 65 && filters.gender === 'all' && filters.interests.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="w-8 h-8 text-primary" />
               </div>
               <h3 className="font-semibold mb-2">Tìm kiếm bạn bè</h3>
               <p className="text-muted-foreground">
-                Nhập ID hoặc tên người dùng để tìm và kết bạn với họ.
+                Sử dụng bộ lọc để tìm kiếm người dùng phù hợp.
               </p>
             </div>
           )}
