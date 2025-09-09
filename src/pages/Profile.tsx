@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
 import { cn } from '@/lib/utils';
-import Head from 'next/head'; // Nếu dùng Next.js
 import { debounce } from 'lodash';
 
 interface Profile {
@@ -505,10 +504,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-100 to-pink-100 p-4">
-      <Head>
-        <title>Hippo Lovely - Chỉnh sửa hồ sơ</title>
-        <meta name="description" content="Chỉnh sửa hồ sơ cá nhân của bạn trên Hippo Lovely để kết nối với những người phù hợp." />
-      </Head>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

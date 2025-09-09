@@ -2,7 +2,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Users, MessageCircle, Sparkles, LogOut } from 'lucide-react';
-import Head from 'next/head'; // Nếu dùng Next.js
 import { vietnamProvinces } from './vietnamProvinces'; // File tỉnh/thành phố
 
 // Component FeatureCard
@@ -71,11 +70,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Head>
-        <title>Hippo Lovely - Kết nối yêu thương</title>
-        <meta name="description" content="Tìm kiếm mối quan hệ ý nghĩa và kết nối với những người phù hợp trên Hippo Lovely." />
-      </Head>
-
       {/* Header */}
       <header className="border-b glass sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
