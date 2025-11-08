@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Users, MessageCircle, Sparkles, LogOut } from 'lucide-react';
-import { vietnamProvinces } from './vietnamProvinces'; // File tỉnh/thành phố
+import { vietnamProvinces } from '@/data/vietnamProvinces';
 
 // Component FeatureCard
 const FeatureCard = ({ icon: Icon, title, description }) => (

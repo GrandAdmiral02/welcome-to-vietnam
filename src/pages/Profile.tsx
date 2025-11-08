@@ -418,7 +418,11 @@ export default function Profile() {
         } else {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert([{ user_id: user.id, full_name: user?.user_metadata?.full_name || 'New User' }])
+            .insert([{ 
+              id: user.id,
+              user_id: user.id, 
+              full_name: user?.user_metadata?.full_name || 'New User' 
+            }])
             .select()
             .single();
 

@@ -20,18 +20,21 @@ export type Database = {
           blocker_id: string
           created_at: string | null
           id: string
+          reason: string | null
         }
         Insert: {
           blocked_id: string
           blocker_id: string
           created_at?: string | null
           id?: string
+          reason?: string | null
         }
         Update: {
           blocked_id?: string
           blocker_id?: string
           created_at?: string | null
           id?: string
+          reason?: string | null
         }
         Relationships: []
       }
@@ -193,6 +196,42 @@ export type Database = {
           reported_id?: string
           reporter_id?: string
           status?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string | null
+          hide_profile_from_feed: boolean | null
+          id: string
+          only_show_verified: boolean | null
+          show_age: boolean | null
+          show_distance: boolean | null
+          show_last_active: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          hide_profile_from_feed?: boolean | null
+          id?: string
+          only_show_verified?: boolean | null
+          show_age?: boolean | null
+          show_distance?: boolean | null
+          show_last_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          hide_profile_from_feed?: boolean | null
+          id?: string
+          only_show_verified?: boolean | null
+          show_age?: boolean | null
+          show_distance?: boolean | null
+          show_last_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
