@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Users, MessageCircle, Sparkles, LogOut } from 'lucide-react';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
+import { useNavigate } from 'react-router-dom';
 
 // Component FeatureCard
 const FeatureCard = ({ icon: Icon, title, description }) => (
@@ -31,6 +32,7 @@ const ProvinceSelector = () => (
 
 const Index = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const displayName = user?.user_metadata?.full_name || user?.email || 'Người dùng';
 
   const handleSignOut = async () => {
@@ -117,11 +119,21 @@ const Index = () => {
                 Hoàn thiện hồ sơ của bạn và bắt đầu khám phá những kết nối mới
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Button size="xl" variant="hero" aria-label="Khám phá người dùng">
+                <Button 
+                  size="xl" 
+                  variant="hero" 
+                  onClick={() => navigate('/discover')}
+                  aria-label="Khám phá người dùng"
+                >
                   <Users className="h-5 w-5 mr-2" aria-hidden="true" />
                   Khám phá người dùng
                 </Button>
-                <Button size="xl" variant="premium" aria-label="Hoàn thiện hồ sơ">
+                <Button 
+                  size="xl" 
+                  variant="premium" 
+                  onClick={() => navigate('/profile')}
+                  aria-label="Hoàn thiện hồ sơ"
+                >
                   <Heart className="h-5 w-5 mr-2" aria-hidden="true" />
                   Hoàn thiện hồ sơ
                 </Button>

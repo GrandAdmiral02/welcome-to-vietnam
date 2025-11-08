@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
 import { cn } from '@/lib/utils';
-import { debounce } from 'lodash';
 
 interface Profile {
   id: string;
@@ -188,11 +187,11 @@ const ProfileForm = ({ profile, setProfile, handleSaveProfile, saving }: {
   return (
     <>
       {/* Basic Info */}
-      <Card>
-        <CardHeader>
+      <Card className="card-hover border-2 shadow-card">
+        <CardHeader className="bg-gradient-subtle">
           <CardTitle>Thông tin cơ bản</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <div>
             <Label htmlFor="fullName">Tên đầy đủ</Label>
             <Input
@@ -286,11 +285,11 @@ const ProfileForm = ({ profile, setProfile, handleSaveProfile, saving }: {
       </Card>
 
       {/* Connection Preferences */}
-      <Card>
-        <CardHeader>
+      <Card className="card-hover border-2 shadow-card">
+        <CardHeader className="bg-gradient-subtle">
           <CardTitle>Tìm kiếm kết nối</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <div>
             <Label htmlFor="lookingFor">Loại kết nối mong muốn</Label>
             <Select value={profile.looking_for || ''} onValueChange={(value) => setProfile({ ...profile, looking_for: value })}>
@@ -331,11 +330,11 @@ const ProfileForm = ({ profile, setProfile, handleSaveProfile, saving }: {
       </Card>
 
       {/* Interests */}
-      <Card>
-        <CardHeader>
+      <Card className="card-hover border-2 shadow-card">
+        <CardHeader className="bg-gradient-subtle">
           <CardTitle>Sở thích</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <div className="flex gap-2">
             <Input
               value={newInterest}
@@ -371,17 +370,17 @@ const ProfileForm = ({ profile, setProfile, handleSaveProfile, saving }: {
         onClick={handleSaveProfile}
         disabled={saving}
         size="lg"
-        className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+        className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-lg py-6"
         aria-label="Lưu thông tin hồ sơ"
       >
         {saving ? (
           <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
             Đang lưu...
           </>
         ) : (
           <>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-5 w-5 mr-2" />
             Lưu thông tin
           </>
         )}
@@ -396,6 +395,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const { photos, uploading, fetchPhotos, handlePhotoUpload, handleDeletePhoto } = useProfilePhotos(user?.id);
 
   useEffect(() => {
@@ -464,7 +464,7 @@ export default function Profile() {
       toast({ title: 'Lỗi', description: validationError, variant: 'destructive' });
       return;
     }
-    setLoading(true);
+    setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -487,11 +487,9 @@ export default function Profile() {
       console.error('Error saving profile:', error);
       toast({ title: 'Lỗi', description: 'Không thể lưu profile', variant: 'destructive' });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
-
-  const debouncedSaveProfile = debounce(handleSaveProfile, 500);
 
   if (loading) {
     return (
@@ -582,8 +580,8 @@ export default function Profile() {
         <ProfileForm
           profile={profile}
           setProfile={setProfile}
-          handleSaveProfile={debouncedSaveProfile}
-          saving={loading}
+          handleSaveProfile={handleSaveProfile}
+          saving={saving}
         />
       </div>
     </div>

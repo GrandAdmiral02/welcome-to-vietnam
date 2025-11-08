@@ -8,7 +8,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AppSidebar } from "./components/AppSidebar";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Matches from "./pages/Matches";
 import Discover from "./pages/Discover";
@@ -31,29 +31,17 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/*" element={
               <ProtectedRoute>
-                <SidebarProvider>
-                  <div className="min-h-screen flex w-full">
-                    <AppSidebar />
-                    <div className="flex-1 flex flex-col">
-                      <header className="border-b p-3 flex items-center">
-                        <SidebarTrigger />
-                      </header>
-                      <main className="flex-1">
-                        <Routes>
-                          <Route path="/" element={<Dashboard />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/matches" element={<Matches />} />
-                          <Route path="/discover" element={<Discover />} />
-                          <Route path="/random-match" element={<RandomMatch />} />
-                          <Route path="/browse" element={<Browse />} />
-                          <Route path="/messages" element={<Messages />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </main>
-                    </div>
-                  </div>
-                </SidebarProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/matches" element={<Matches />} />
+                  <Route path="/discover" element={<Discover />} />
+                  <Route path="/random-match" element={<RandomMatch />} />
+                  <Route path="/browse" element={<Browse />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </ProtectedRoute>
             } />
           </Routes>
