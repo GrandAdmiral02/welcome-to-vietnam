@@ -5,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, X, ArrowLeft, MapPin, Calendar, Sparkles, Camera, Zap, Star, Shuffle } from 'lucide-react';
+import { Heart, X, ArrowLeft, MapPin, Calendar, Sparkles, Camera, Zap, Star, Shuffle, Filter, SlidersHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Profile {
   id: string;
@@ -34,6 +37,9 @@ const RandomMatch = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [ageRange, setAgeRange] = useState<[number, number]>([18, 65]);
+  const [selectedGender, setSelectedGender] = useState<string>('all');
   const cardRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -49,8 +55,8 @@ const RandomMatch = () => {
     try {
       setLoading(true);
       
-      // Fetch random profiles with photos
-      const { data: profilesData, error: profilesError } = await supabase
+      // Build query with filters
+      let query = supabase
         .from('profiles')
         .select(`
           id,
@@ -60,11 +66,22 @@ const RandomMatch = () => {
           bio,
           location,
           interests,
-          avatar_url
+          avatar_url,
+          gender
         `)
         .neq('user_id', user?.id)
         .not('age', 'is', null)
-        .not('bio', 'is', null)
+        .not('bio', 'is', null);
+
+      // Apply age filter
+      query = query.gte('age', ageRange[0]).lte('age', ageRange[1]);
+
+      // Apply gender filter
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+      }
+
+      const { data: profilesData, error: profilesError } = await query
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -291,6 +308,15 @@ const RandomMatch = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowFilters(true)}
+                className="gap-2 hover:bg-white/50"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                Bộ lọc
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={fetchRandomProfiles}
                 className="gap-2 hover:bg-white/50"
               >
@@ -448,6 +474,73 @@ const RandomMatch = () => {
           Kéo thả hoặc bấm nút để tiếp tục
         </div>
       </div>
+
+      {/* Filters Dialog */}
+      <Dialog open={showFilters} onOpenChange={setShowFilters}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bộ lọc tìm kiếm</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Gender Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Giới tính</label>
+              <Select value={selectedGender} onValueChange={setSelectedGender}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn giới tính" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="male">Nam</SelectItem>
+                  <SelectItem value="female">Nữ</SelectItem>
+                  <SelectItem value="other">Khác</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Age Range Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Độ tuổi: {ageRange[0]} - {ageRange[1]}
+              </label>
+              <Slider
+                min={18}
+                max={65}
+                step={1}
+                value={ageRange}
+                onValueChange={(value) => setAgeRange(value as [number, number])}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>18 tuổi</span>
+                <span>65 tuổi</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setAgeRange([18, 65]);
+                  setSelectedGender('all');
+                }}
+                className="flex-1"
+              >
+                Đặt lại
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowFilters(false);
+                  fetchRandomProfiles();
+                }}
+                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500"
+              >
+                Áp dụng
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Match Modal */}
       {matchFound && (

@@ -110,6 +110,60 @@ const Index = () => {
           ))}
         </div>
 
+        {/* Quick Access Cards */}
+        <div className="mb-16">
+          <h3 className="text-2xl font-bold mb-6 text-center">Tính năng chính</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/profile')}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Hồ sơ của bạn</h4>
+                  <p className="text-sm text-muted-foreground">Cập nhật thông tin cá nhân</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/random-match')}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Random Match</h4>
+                  <p className="text-sm text-muted-foreground">Tìm người ngẫu nhiên theo bộ lọc</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/browse')}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Tìm kiếm</h4>
+                  <p className="text-sm text-muted-foreground">Tìm theo tên hoặc ID người dùng</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/messages')}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Tin nhắn</h4>
+                  <p className="text-sm text-muted-foreground">Chat với các kết nối của bạn</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div className="text-center">
           <Card className="max-w-3xl mx-auto pulse-glow">
@@ -138,7 +192,6 @@ const Index = () => {
                   Hoàn thiện hồ sơ
                 </Button>
               </div>
-              <ProvinceSelector />
             </CardContent>
           </Card>
         </div>
