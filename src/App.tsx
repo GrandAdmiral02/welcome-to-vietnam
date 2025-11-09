@@ -10,6 +10,7 @@ import { AppSidebar } from "./components/AppSidebar";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 import Matches from "./pages/Matches";
 import Discover from "./pages/Discover";
 import RandomMatch from "./pages/RandomMatch";
@@ -34,6 +35,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/user/:userId" element={<UserProfile />} />
                   <Route path="/matches" element={<Matches />} />
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/random-match" element={<RandomMatch />} />

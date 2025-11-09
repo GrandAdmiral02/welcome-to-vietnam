@@ -218,9 +218,12 @@ const Browse = () => {
               <h3 className="font-semibold">Kết quả tìm kiếm</h3>
               <div className="space-y-3">
                 {searchResults.map((profile) => (
-                  <Card key={profile.id} className="p-4">
+                  <Card key={profile.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                      <div 
+                        className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0"
+                        onClick={() => navigate(`/user/${profile.user_id}`)}
+                      >
                         {profile.avatar_url ? (
                           <img
                             src={profile.avatar_url}
@@ -233,7 +236,10 @@ const Browse = () => {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div 
+                        className="flex-1 min-w-0"
+                        onClick={() => navigate(`/user/${profile.user_id}`)}
+                      >
                         <h4 className="font-semibold truncate">{profile.full_name}</h4>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           {profile.age && <span>{profile.age} tuổi</span>}
@@ -248,7 +254,10 @@ const Browse = () => {
                       </div>
                       <Button
                         size="sm"
-                        onClick={() => handleAddFriend(profile)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddFriend(profile);
+                        }}
                         className="gap-2 flex-shrink-0"
                       >
                         <UserPlus className="w-4 h-4" />
