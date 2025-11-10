@@ -509,19 +509,11 @@ export default function Profile() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="p-2" aria-label="Quay lại dashboard">
+          <Button variant="ghost" onClick={() => navigate(`/user/${user?.id}`)} className="p-2" aria-label="Quay lại trang cá nhân">
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Hồ sơ của tôi</h1>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(`/user/${user?.id}`)} 
-            className="gap-2"
-            aria-label="Xem profile của tôi"
-          >
-            <Eye className="h-4 w-4" />
-            Xem profile
-          </Button>
+          <h1 className="text-2xl font-bold text-gray-900">Chỉnh sửa hồ sơ</h1>
+          <div className="w-10" />
         </div>
 
         {/* Photos Section */}

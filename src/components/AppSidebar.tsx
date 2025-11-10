@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles, Grid, UserPlus } from "lucide-react";
+import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles, Grid, UserPlus, Edit } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,14 +19,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const menuItems = [
+const getMenuItems = (userId: string | undefined) => [
   { title: "Trang chủ", url: "/", icon: Heart },
   { title: "Khám phá", url: "/discover", icon: Compass },
   { title: "Random Match", url: "/random-match", icon: Sparkles },
   { title: "Thêm bạn", url: "/browse", icon: UserPlus },
   { title: "Kết nối", url: "/matches", icon: Users },
   { title: "Tin nhắn", url: "/messages", icon: MessageCircle },
-  { title: "Hồ sơ", url: "/profile", icon: User },
+  { title: "Trang cá nhân", url: userId ? `/user/${userId}` : "/profile", icon: User },
+  { title: "Chỉnh sửa", url: "/profile", icon: Edit },
   { title: "Cài đặt", url: "/settings", icon: Settings },
 ];
 
@@ -37,6 +38,7 @@ export function AppSidebar() {
   const { toast } = useToast();
   const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
+  const menuItems = getMenuItems(user?.id);
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
