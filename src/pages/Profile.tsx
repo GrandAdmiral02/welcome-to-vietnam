@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, X, Plus, Heart, Save, ArrowLeft } from 'lucide-react';
+import { Camera, X, Plus, Heart, Save, ArrowLeft, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
@@ -513,7 +513,15 @@ export default function Profile() {
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Hồ sơ của tôi</h1>
-          <div />
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(`/user/${user?.id}`)} 
+            className="gap-2"
+            aria-label="Xem profile của tôi"
+          >
+            <Eye className="h-4 w-4" />
+            Xem profile
+          </Button>
         </div>
 
         {/* Photos Section */}
