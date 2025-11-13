@@ -67,20 +67,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+    setLoading(true);
 
-        if (currentUser) {
-          await fetchProfile(currentUser.id);
-        } else {
-          setProfile(null);
-        }
-      } catch (e) {
-        console.error('Error in onAuthStateChange handler:', e);
-      } finally {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // This callback is now SYNCHRONOUS, as it should be.
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        // We call the async function separately and handle loading state
+        // when it completes, preventing the deadlock.
+        fetchProfile(session.user.id).finally(() => {
+          setLoading(false);
+        });
+      } else {
+        // No user, so no async action needed. Stop loading.
+        setProfile(null);
         setLoading(false);
       }
     });
@@ -90,13 +92,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchProfile]);
 
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (user?.id) {
       updateLastActive(user.id);
       intervalId = setInterval(() => {
         updateLastActive(user.id);
-      }, 60000);
+      }, 60000); // 1 minute
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -128,7 +131,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
   };
 
-  // FIX: Luôn render children. Việc hiển thị gì khi tải sẽ do các component con quyết định.
   return (
     <AuthContext.Provider value={value}>
       {children}

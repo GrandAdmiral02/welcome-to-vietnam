@@ -1,7 +1,8 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Users, MessageCircle, Sparkles, LogOut, Search, UserCircle, ShieldCheck } from 'lucide-react';
+// Corrected the icon imports: Added Compass, removed unused Users icon.
+import { Heart, MessageCircle, Sparkles, Search, UserCircle, Compass } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Component QuickActionCard
@@ -29,18 +30,8 @@ const QuickActionCard = ({ icon: Icon, title, description, onClick, gradient = f
 );
 
 const Index = () => {
-  const { user, signOut, profile } = useAuth(); // Lấy thêm profile
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Người dùng';
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Đăng xuất thất bại:', error);
-      alert('Đã có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.');
-    }
-  };
 
   if (!user) {
     return (
@@ -51,46 +42,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-primary to-primary/60 rounded-xl p-2.5">
-              <Heart className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Hippo Lovely</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Nút Admin - chỉ hiển thị cho admin */}
-            {profile?.role === 'admin' && (
-                <Button 
-                    variant="ghost"
-                    size="sm" 
-                    onClick={() => navigate('/admin')}
-                >
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    Quản trị
-                </Button>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate(`/user/${user.id}`)}
-              className="hidden sm:flex"
-            >
-              <UserCircle className="h-4 w-4 mr-2" />
-              {displayName}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Đăng xuất
-            </Button>
-          </div>
-        </nav>
-      </header>
-
-      {/* Main Content */}
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
       <main className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-4">
@@ -102,35 +54,32 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        {/* Quick Actions Grid (Updated to match header navigation) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           <QuickActionCard
-            icon={Sparkles}
-            title="Random Match"
-            description="Khám phá người dùng ngẫu nhiên theo bộ lọc giới tính và độ tuổi"
-            onClick={() => navigate('/random-match')}
-            gradient={true}
+            icon={Compass} // This now works because Compass is imported
+            title="Khám phá"
+            description="Duyệt qua danh sách người dùng và tìm kiếm kết nối mới"
+            onClick={() => navigate('/discover')}
           />
-          
           <QuickActionCard
             icon={Search}
             title="Tìm kiếm"
             description="Tìm người dùng theo tên hoặc ID để kết nối"
             onClick={() => navigate('/browse')}
           />
-          
+           <QuickActionCard
+            icon={Sparkles}
+            title="Ghép đôi ngẫu nhiên"
+            description="Gặp gỡ người mới một cách bất ngờ và thú vị"
+            onClick={() => navigate('/random-match')}
+            gradient={true}
+          />
           <QuickActionCard
             icon={MessageCircle}
             title="Tin nhắn"
             description="Trò chuyện với các kết nối và bạn bè của bạn"
             onClick={() => navigate('/messages')}
-          />
-          
-          <QuickActionCard
-            icon={Users}
-            title="Khám phá"
-            description="Duyệt qua danh sách người dùng và tìm kiếm kết nối mới"
-            onClick={() => navigate('/discover')}
           />
         </div>
 

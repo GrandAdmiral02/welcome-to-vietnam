@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./hooks/useAuth";
 // Layouts and Route Protection
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
+import MainLayout from "./layouts/MainLayout";
 import { Loader2 } from "lucide-react";
 
 // --- Pages ---
@@ -22,6 +23,8 @@ import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/Admin";
+import TermsPage from "./pages/TermsPage"; // Import the new Terms page
+import PrivacyPage from "./pages/PrivacyPage"; // Import the new Privacy page
 
 const queryClient = new QueryClient();
 
@@ -38,35 +41,33 @@ const AppRoutes = () => {
 
   return (
     <BrowserRouter>
-        <Routes>
-            {/* Public auth route */}
-            <Route path="/auth" element={<Auth />} />
+      <Routes>
+        {/* Group 1: Public Auth Route (No Layout) */}
+        <Route path="/auth/*" element={<Auth />} />
 
-            {/* Protected Routes for regular users */}
-            <Route path="/*" element={
-              <ProtectedRoute>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/user/:userId" element={<UserProfile />} />
-                  <Route path="/matches" element={<Matches />} />
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/random-match" element={<RandomMatch />} />
-                  <Route path="/browse" element={<Browse />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/settings" element={<Settings />} />
-                  
-                  {/* Admin Route - Nested inside for protection */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminPage />} />
-                  </Route>
+        {/* Group 2: Protected Admin Routes (Uses AdminLayout only) */}
+        <Route element={<ProtectedRoute roles={['admin']}><AdminLayout /></ProtectedRoute>}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
 
-                  {/* Fallback 404 Not Found Route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </ProtectedRoute>
-            } />
-        </Routes>
+        {/* Group 3: Protected Main Application Routes (Uses MainLayout) */}
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Index />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/user/:userId" element={<UserProfile />} />
+          <Route path="/matches" element={<Matches />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/random-match" element={<RandomMatch />} />
+          <Route path="/browse" element={<Browse />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/settings/*" element={<Settings />} />
+          <Route path="/terms" element={<TermsPage />} /> {/* Add the route for TermsPage */}
+          <Route path="/privacy" element={<PrivacyPage />} /> {/* Add the route for PrivacyPage */}
+        </Route>
+
+        {/* Fallback 404 Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </BrowserRouter>
   );
 };
