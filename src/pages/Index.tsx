@@ -1,8 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-// Corrected the icon imports: Added Compass, removed unused Users icon.
-import { Heart, MessageCircle, Sparkles, Search, UserCircle, Compass } from 'lucide-react';
+import { Heart, MessageCircle, Sparkles, Search, UserCircle, Compass, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Component QuickActionCard
@@ -44,20 +43,31 @@ const Index = () => {
   return (
     <div className="bg-gradient-to-br from-background via-background to-muted/20">
       <main className="container mx-auto px-4 py-12 max-w-6xl">
-        {/* Hero Section */}
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-            Khám phá kết nối mới
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Tìm kiếm những mối quan hệ ý nghĩa và xây dựng kết nối thú vị
-          </p>
+        {/* New Enhanced Hero Section - Corrected */}
+        <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 md:p-12 mb-16 border border-primary/20">
+            <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 rounded-full blur-3xl opacity-50" />
+            <div className="relative z-10 text-center md:text-left">
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent mb-4">
+                    Chào mừng đến với Hippo Lovely
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto md:mx-0 mb-8">
+                    Không chỉ là hẹn hò. Đây là nơi để xây dựng những mối quan hệ chân thành và tìm thấy những tâm hồn đồng điệu.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <Button size="lg" onClick={() => navigate('/discover')} className="shadow-lg hover:shadow-primary/40 transition-shadow">
+                        Khám phá ngay <Compass className="w-5 h-5 ml-2" />
+                    </Button>
+                    <Button size="lg" variant="outline" onClick={() => navigate('/random-match')}>
+                        Bắt đầu ghép đôi <Sparkles className="w-5 h-5 ml-2" />
+                    </Button>
+                </div>
+            </div>
         </div>
 
-        {/* Quick Actions Grid (Updated to match header navigation) */}
+        {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           <QuickActionCard
-            icon={Compass} // This now works because Compass is imported
+            icon={Compass}
             title="Khám phá"
             description="Duyệt qua danh sách người dùng và tìm kiếm kết nối mới"
             onClick={() => navigate('/discover')}

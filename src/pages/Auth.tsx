@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Navigate } from 'react-router-dom';
-import { Heart, Sparkles } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Heart, Sparkles, MailCheck } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [isSignUpSuccess, setIsSignUpSuccess] = useState(false);
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -63,14 +63,36 @@ const Auth = () => {
         variant: "destructive"
       });
     } else {
-      toast({
-        title: "Đăng ký thành công!",
-        description: "Vui lòng kiểm tra email để xác thực tài khoản. Email xác nhận đã được gửi!"
-      });
+      setIsSignUpSuccess(true);
     }
     
     setLoading(false);
   };
+  
+  if (isSignUpSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-md animate-fade-in">
+          <CardHeader className="text-center">
+            <MailCheck className="mx-auto h-16 w-16 text-green-500" />
+            <CardTitle className="mt-4 text-2xl font-bold">Đăng ký thành công!</CardTitle>
+            <CardDescription className="mt-2 text-muted-foreground">
+              Một email xác thực đã được gửi đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư đến (và cả thư mục spam) để kích hoạt tài khoản.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+             <Button 
+                onClick={() => setIsSignUpSuccess(false)}
+                variant="outline"
+                className="w-full"
+              >
+                Quay lại trang đăng nhập
+              </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
