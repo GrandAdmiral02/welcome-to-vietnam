@@ -111,9 +111,8 @@ export default function Matches() {
     }
   };
 
-  const handleStartChat = (matchId: string, otherUserId: string) => {
-    // Navigate to chat with this user
-    navigate(`/chat/${matchId}`);
+  const handleStartChat = (matchId: string) => {
+    navigate(`/messages?match_id=${matchId}`);
   };
 
   const getPrimaryPhoto = (photos: Array<{url: string; is_primary: boolean}>) => {
@@ -263,7 +262,7 @@ export default function Matches() {
                   {/* Action Button */}
                   <div className="p-4 pt-0">
                     <Button 
-                      onClick={() => handleStartChat(match.id, match.profile.user_id)}
+                      onClick={() => handleStartChat(match.id)}
                       className="w-full bg-[var(--gradient-primary)] hover:opacity-90"
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />

@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Users, MessageCircle, Sparkles, LogOut, Search, UserCircle } from 'lucide-react';
+import { Heart, Users, MessageCircle, Sparkles, LogOut, Search, UserCircle, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Component QuickActionCard
@@ -29,7 +29,7 @@ const QuickActionCard = ({ icon: Icon, title, description, onClick, gradient = f
 );
 
 const Index = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth(); // Lấy thêm profile
   const navigate = useNavigate();
   const displayName = user?.user_metadata?.full_name || user?.email || 'Người dùng';
 
@@ -62,10 +62,21 @@ const Index = () => {
             <h1 className="text-xl font-bold text-foreground">Hippo Lovely</h1>
           </div>
           <div className="flex items-center gap-3">
+            {/* Nút Admin - chỉ hiển thị cho admin */}
+            {profile?.role === 'admin' && (
+                <Button 
+                    variant="ghost"
+                    size="sm" 
+                    onClick={() => navigate('/admin')}
+                >
+                    <ShieldCheck className="h-4 w-4 mr-2" />
+                    Quản trị
+                </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate(`/user/${user.id}`)}
               className="hidden sm:flex"
             >
               <UserCircle className="h-4 w-4 mr-2" />

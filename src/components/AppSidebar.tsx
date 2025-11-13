@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles, Grid, UserPlus, Edit } from "lucide-react";
+import { Heart, MessageCircle, User, Settings, Compass, Users, LogOut, Sparkles, UserPlus, Edit, ShieldCheck } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,13 +34,12 @@ const getMenuItems = (userId: string | undefined) => [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth(); // Lấy thêm profile
   const { toast } = useToast();
   const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
   const menuItems = getMenuItems(user?.id);
 
-  const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary/10 text-primary border-r-2 border-primary" : "hover:bg-muted/50";
 
@@ -100,6 +99,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* === Admin Menu === */}
+        {profile?.role === 'admin' && (
+            <SidebarGroup>
+                <SidebarGroupLabel>Quản trị</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <NavLink to="/admin" end className={getNavCls}>
+                                    <ShieldCheck className="h-4 w-4" />
+                                    {!isCollapsed && <span>Bảng điều khiển</span>}
+                                </NavLink>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+        )}
+
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">

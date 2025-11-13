@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN last_active timestamptz NULL;
