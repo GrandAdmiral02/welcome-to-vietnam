@@ -23,8 +23,10 @@ import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/Admin";
-import TermsPage from "./pages/TermsPage"; // Import the new Terms page
-import PrivacyPage from "./pages/PrivacyPage"; // Import the new Privacy page
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import MusicManagementPage from "./pages/admin/MusicManagement";
+import MusicPage from "./pages/Music"; // Correctly import the component
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,7 @@ const AppRoutes = () => {
         {/* Group 2: Protected Admin Routes (Uses AdminLayout only) */}
         <Route element={<ProtectedRoute roles={['admin']}><AdminLayout /></ProtectedRoute>}>
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/music" element={<MusicManagementPage />} />
         </Route>
 
         {/* Group 3: Protected Main Application Routes (Uses MainLayout) */}
@@ -61,8 +64,10 @@ const AppRoutes = () => {
           <Route path="/browse" element={<Browse />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/settings/*" element={<Settings />} />
-          <Route path="/terms" element={<TermsPage />} /> {/* Add the route for TermsPage */}
-          <Route path="/privacy" element={<PrivacyPage />} /> {/* Add the route for PrivacyPage */}
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          {/* This is the line to fix */}
+          <Route path="/music" element={<MusicPage />} />
         </Route>
 
         {/* Fallback 404 Route */}

@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Lock, Unlock, Search, ShieldAlert } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth'; // Import useAuth để lấy thông tin user hiện tại
+import { Loader2, Lock, Unlock, Search, ShieldAlert, Copy, Check } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 // Giao diện này khớp với dữ liệu trả về từ Edge Function
 interface CombinedUser {
@@ -21,28 +21,18 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const { user } = useAuth(); // Lấy thông tin user để không hiển thị nút khóa trên chính mình
+  const { user } = useAuth(); 
+  const [copiedUserId, setCopiedUserId] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Gọi Edge Function 'get-all-users'
       const { data, error: functionError } = await supabase.functions.invoke('get-all-users');
-
-      if (functionError) {
-        throw new Error(`Function Error: ${functionError.message}`);
-      }
-      
-      // Dữ liệu từ function có thể là một chuỗi JSON hoặc một object lỗi
-      if (typeof data === 'string') {
-         setUsers(JSON.parse(data));
-      } else if (data.error) {
-        throw new Error(data.error);
-      } else {
-        setUsers(data);
-      }
-
+      if (functionError) throw new Error(`Function Error: ${functionError.message}`);
+      if (typeof data === 'string') setUsers(JSON.parse(data));
+      else if (data.error) throw new Error(data.error);
+      else setUsers(data);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError(`Không thể tải danh sách người dùng. ${err.message}`);
@@ -56,25 +46,26 @@ const UserManagement = () => {
   }, [fetchUsers]);
 
   const handleUpdateStatus = async (userId: string, newStatus: 'active' | 'locked') => {
-     // Logic để cập nhật trạng thái user
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ status: newStatus })
-        .eq('user_id', userId);
-
+      const { error } = await supabase.from('profiles').update({ status: newStatus }).eq('user_id', userId);
       if (error) throw error;
-      // Tải lại danh sách sau khi cập nhật thành công
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
-      // Có thể thêm toast hoặc thông báo lỗi ở đây
     }
+  };
+
+  const handleCopy = (text: string, userId: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedUserId(userId);
+      setTimeout(() => setCopiedUserId(null), 2000); // Reset icon after 2 seconds
+    });
   };
 
   const filteredUsers = users.filter(u => 
     (u.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (u.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    (u.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (u.user_id?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -99,7 +90,7 @@ const UserManagement = () => {
           <div className="relative w-full max-w-sm">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                  placeholder="Tìm kiếm theo tên hoặc email..."
+                  placeholder="Tìm kiếm theo tên, email, hoặc ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -111,6 +102,7 @@ const UserManagement = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Họ và tên</TableHead>
+              <TableHead>ID Người dùng</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Vai trò</TableHead>
               <TableHead>Trạng thái</TableHead>
@@ -121,6 +113,18 @@ const UserManagement = () => {
             {filteredUsers.length > 0 ? filteredUsers.map((u) => (
               <TableRow key={u.user_id}>
                 <TableCell className="font-medium">{u.full_name}</TableCell>
+                <TableCell>
+                    <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs">{u.user_id.substring(0, 8)}...</span>
+                        <button onClick={() => handleCopy(u.user_id, u.user_id)} className="p-1 rounded-md hover:bg-muted">
+                            {copiedUserId === u.user_id ? (
+                                <Check className="w-3 h-3 text-green-500" />
+                            ) : (
+                                <Copy className="w-3 h-3 text-muted-foreground" />
+                            )}
+                        </button>
+                    </div>
+                </TableCell>
                 <TableCell>{u.email || 'N/A'}</TableCell>
                 <TableCell>{u.role}</TableCell>
                 <TableCell>
@@ -146,7 +150,7 @@ const UserManagement = () => {
               </TableRow>
             )) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">Không tìm thấy người dùng nào khớp.</TableCell>
+                    <TableCell colSpan={6} className="text-center h-24">Không tìm thấy người dùng nào khớp.</TableCell>
                 </TableRow>
             )}
           </TableBody>

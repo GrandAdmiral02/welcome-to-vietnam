@@ -1,27 +1,63 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate, Outlet } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Navigate, Outlet, NavLink } from "react-router-dom";
+import { Loader2, Home, Music, Shield } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const AdminLayout = () => {
   const { user, loading, profile } = useAuth();
 
-  // Đang trong quá trình tải thông tin người dùng và hồ sơ
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
 
-  // Người dùng chưa đăng nhập hoặc không phải là quản trị viên
   if (!user || profile?.role !== 'admin') {
-    // Chuyển hướng họ đến trang chính hoặc trang đăng nhập
     return <Navigate to="/" replace />;
   }
 
-  // Nếu người dùng là quản trị viên, hiển thị nội dung được yêu cầu (ví dụ: trang quản trị)
-  return <Outlet />;
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+      isActive && "text-primary bg-muted"
+    );
+
+  return (
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <aside className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <NavLink to="/admin" className="flex items-center gap-2 font-semibold">
+              <Shield className="h-6 w-6 text-primary" />
+              <span>Admin Panel</span>
+            </NavLink>
+          </div>
+          <nav className="flex-1 grid items-start px-2 text-sm font-medium lg:px-4">
+            <NavLink to="/admin" end className={navLinkClass}>
+              <Home className="h-4 w-4" />
+              Bảng điều khiển
+            </NavLink>
+            <NavLink to="/admin/music" className={navLinkClass}>
+              <Music className="h-4 w-4" />
+              Quản lý Âm nhạc
+            </NavLink>
+          </nav>
+          <div className="mt-auto p-4">
+             <Button size="sm" className="w-full" asChild>
+                <NavLink to="/">Về trang chính</NavLink>
+            </Button>
+          </div>
+        </div>
+      </aside>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto">
+         {/* A simple header for mobile could be added here if needed */}
+         <Outlet />
+      </main>
+    </div>
+  );
 };
 
 export default AdminLayout;
