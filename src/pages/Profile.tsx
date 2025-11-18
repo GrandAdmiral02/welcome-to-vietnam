@@ -15,6 +15,7 @@ import { Camera, X, Plus, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vietnamProvinces } from '@/data/vietnamProvinces';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Profile {
   id: string;
@@ -290,7 +291,7 @@ export default function Profile() {
         } else if (fetchError && fetchError.code === 'PGRST116') {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert([{ user_id: user.id, full_name: user.user_metadata?.full_name || 'Người dùng mới' }])
+            .insert([{ id: uuidv4(), user_id: user.id, full_name: user.user_metadata?.full_name || 'Người dùng mới' }])
             .select()
             .single();
 
