@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Music, Play, Youtube } from "lucide-react";
 import { toast } from "sonner";
-import ReactPlayer from "react-player";
+// @ts-ignore - react-player types issue with submodules
+import ReactPlayer from "react-player/youtube";
 
 interface Song {
     id: string;
@@ -76,21 +77,19 @@ const MusicPage = () => {
                 <div className="aspect-video bg-muted rounded-lg overflow-hidden relative shadow-lg">
                     {currentSong ? (
                         <ReactPlayer
-                            {...{
-                                url: currentSong.youtube_url,
-                                playing: isPlaying,
-                                controls: true,
-                                width: "100%",
-                                height: "100%",
-                                onPlay: () => setIsPlaying(true),
-                                onPause: () => setIsPlaying(false),
-                                onError: (e: any) => {
-                                    console.error('ReactPlayer error:', e);
-                                    toast.error("Không thể phát video này.", {
-                                        description: "Vui lòng thử bài hát khác.",
-                                    });
-                                }
-                            } as any}
+                            url={currentSong.youtube_url}
+                            playing={isPlaying}
+                            controls
+                            width="100%"
+                            height="100%"
+                            onPlay={() => setIsPlaying(true)}
+                            onPause={() => setIsPlaying(false)}
+                            onError={(e: any) => {
+                                console.error('ReactPlayer error:', e);
+                                toast.error("Không thể phát video này.", {
+                                    description: "Vui lòng thử bài hát khác.",
+                                });
+                            }}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
