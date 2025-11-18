@@ -38,25 +38,91 @@ export type Database = {
         }
         Relationships: []
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       matches: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
-          status: string | null
+          status: string
           user1_id: string
           user2_id: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          status?: string | null
+          status?: string
           user1_id: string
           user2_id: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          status?: string | null
+          status?: string
           user1_id?: string
           user2_id?: string
         }
@@ -65,24 +131,33 @@ export type Database = {
       messages: {
         Row: {
           content: string
-          created_at: string | null
+          created_at: string
           id: string
+          is_read: boolean
           match_id: string
+          recipient_id: string | null
           sender_id: string
+          type: string
         }
         Insert: {
           content: string
-          created_at?: string | null
+          created_at?: string
           id?: string
+          is_read?: boolean
           match_id: string
+          recipient_id?: string | null
           sender_id: string
+          type?: string
         }
         Update: {
           content?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
+          is_read?: boolean
           match_id?: string
+          recipient_id?: string | null
           sender_id?: string
+          type?: string
         }
         Relationships: [
           {
@@ -118,6 +193,101 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comments: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          parent_comment_id: string | null
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -129,9 +299,12 @@ export type Database = {
           gender: string | null
           id: string
           interests: string[] | null
+          last_active: string | null
           location: string | null
           looking_for: string | null
           looking_for_gender: string | null
+          role: string
+          status: string
           updated_at: string | null
           user_id: string
         }
@@ -145,9 +318,12 @@ export type Database = {
           gender?: string | null
           id: string
           interests?: string[] | null
+          last_active?: string | null
           location?: string | null
           looking_for?: string | null
           looking_for_gender?: string | null
+          role?: string
+          status?: string
           updated_at?: string | null
           user_id: string
         }
@@ -161,9 +337,12 @@ export type Database = {
           gender?: string | null
           id?: string
           interests?: string[] | null
+          last_active?: string | null
           location?: string | null
           looking_for?: string | null
           looking_for_gender?: string | null
+          role?: string
+          status?: string
           updated_at?: string | null
           user_id?: string
         }
@@ -198,6 +377,75 @@ export type Database = {
           status?: string | null
         }
         Relationships: []
+      }
+      songs: {
+        Row: {
+          added_by: string | null
+          artist: string | null
+          created_at: string
+          id: string
+          title: string
+          youtube_url: string
+        }
+        Insert: {
+          added_by?: string | null
+          artist?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          youtube_url: string
+        }
+        Update: {
+          added_by?: string | null
+          artist?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
+      system_notifications: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notification_type: string
+          target_user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notification_type?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notification_type?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_notifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "system_notifications_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_preferences: {
         Row: {
@@ -240,7 +488,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_match_id_from_path: { Args: { path_name: string }; Returns: string }
+      is_member_of_match: {
+        Args: { match_id_to_check: string; user_id_to_check: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

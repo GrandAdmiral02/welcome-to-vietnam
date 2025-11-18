@@ -109,7 +109,7 @@ const MessagesPage = () => {
         try {
             const { data, error } = await supabase.from('messages').select('*').eq('match_id', matchId).order('created_at', { ascending: true });
             if (error) throw error;
-            setMessages(data || []);
+            setMessages((data || []) as Message[]);
         } catch (error) { console.error("Error fetching messages:", error); } 
         finally { setLoadingMessages(false); }
     }, []);

@@ -3,10 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  roles?: string[];
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, roles }: ProtectedRouteProps) => {
+  const { user, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -18,6 +19,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (roles && profile && !roles.includes(profile.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
