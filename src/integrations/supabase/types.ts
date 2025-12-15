@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      article_comments: {
+        Row: {
+          article_id: string
+          content: string
+          created_at: string
+          id: string
+          parent_comment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          content: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "article_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "article_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      article_likes: {
+        Row: {
+          article_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_likes_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      articles: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -101,6 +199,35 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      hidden_conversations: {
+        Row: {
+          created_at: string | null
+          id: number
+          match_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: never
+          match_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: never
+          match_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hidden_conversations_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -297,6 +424,7 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           gender: string | null
+          gender_preference: string | null
           id: string
           interests: string[] | null
           last_active: string | null
@@ -316,6 +444,7 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           gender?: string | null
+          gender_preference?: string | null
           id: string
           interests?: string[] | null
           last_active?: string | null
@@ -335,6 +464,7 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           gender?: string | null
+          gender_preference?: string | null
           id?: string
           interests?: string[] | null
           last_active?: string | null
@@ -489,6 +619,50 @@ export type Database = {
     }
     Functions: {
       get_match_id_from_path: { Args: { path_name: string }; Returns: string }
+      get_random_profiles_with_photos:
+        | {
+            Args: {
+              count: number
+              current_user_id: string
+              excluded_ids: string[]
+              max_age: number
+              min_age: number
+              p_gender_preference: string
+            }
+            Returns: {
+              age: number
+              avatar_url: string
+              bio: string
+              full_name: string
+              gender: string
+              id: string
+              interests: string[]
+              location: string
+              photos: Json
+              user_id: string
+            }[]
+          }
+        | {
+            Args: {
+              count_limit: number
+              current_user_id: string
+              excluded_ids: string[]
+              max_age: number
+              min_age: number
+            }
+            Returns: {
+              age: number
+              avatar_url: string
+              bio: string
+              full_name: string
+              gender: string
+              id: string
+              interests: string[]
+              location: string
+              photos: Json
+              user_id: string
+            }[]
+          }
       is_member_of_match: {
         Args: { match_id_to_check: string; user_id_to_check: string }
         Returns: boolean
