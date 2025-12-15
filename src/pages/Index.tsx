@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MessageCircle, Sparkles, Search, UserCircle, Compass, ArrowRight } from 'lucide-react';
+import { Heart, MessageCircle, Sparkles, Search, UserCircle, Newspaper, ArrowRight } from 'lucide-react'; // Changed Compass to Newspaper
 import { useNavigate } from 'react-router-dom';
 
 // Component QuickActionCard
@@ -54,8 +54,8 @@ const Index = () => {
                     Không chỉ là hẹn hò. Đây là nơi để xây dựng những mối quan hệ chân thành và tìm thấy những tâm hồn đồng điệu.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <Button size="lg" onClick={() => navigate('/discover')} className="shadow-lg hover:shadow-primary/40 transition-shadow">
-                        Khám phá ngay <Compass className="w-5 h-5 ml-2" />
+                    <Button size="lg" onClick={() => navigate('/news')} className="shadow-lg hover:shadow-primary/40 transition-shadow">
+                        Xem tin tức <Newspaper className="w-5 h-5 ml-2" />
                     </Button>
                     <Button size="lg" variant="outline" onClick={() => navigate('/random-match')}>
                         Bắt đầu ghép đôi <Sparkles className="w-5 h-5 ml-2" />
@@ -67,10 +67,10 @@ const Index = () => {
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           <QuickActionCard
-            icon={Compass}
-            title="Khám phá"
-            description="Duyệt qua danh sách người dùng và tìm kiếm kết nối mới"
-            onClick={() => navigate('/discover')}
+            icon={Newspaper} // Changed from Compass
+            title="Tin tức"
+            description="Cập nhật những thông tin và sự kiện mới nhất"
+            onClick={() => navigate('/news')} // Changed from /discover
           />
           <QuickActionCard
             icon={Search}

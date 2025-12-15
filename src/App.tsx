@@ -16,17 +16,17 @@ import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Matches from "./pages/Matches";
-import Discover from "./pages/Discover";
+import News from "./pages/News";
+import ArticleDetail from "./pages/ArticleDetail"; // Import the new detail page
 import RandomMatch from "./pages/RandomMatch";
 import Browse from "./pages/Browse";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/Admin";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import MusicManagementPage from "./pages/admin/MusicManagement";
-import MusicPage from "./pages/Music"; // Correctly import the component
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +50,6 @@ const AppRoutes = () => {
         {/* Group 2: Protected Admin Routes (Uses AdminLayout only) */}
         <Route element={<ProtectedRoute roles={['admin']}><AdminLayout /></ProtectedRoute>}>
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin/music" element={<MusicManagementPage />} />
         </Route>
 
         {/* Group 3: Protected Main Application Routes (Uses MainLayout) */}
@@ -59,15 +58,15 @@ const AppRoutes = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/matches" element={<Matches />} />
-          <Route path="/discover" element={<Discover />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/news/:articleId" element={<ArticleDetail />} /> {/* Add the new route */}
           <Route path="/random-match" element={<RandomMatch />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/settings/*" element={<Settings />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          {/* This is the line to fix */}
-          <Route path="/music" element={<MusicPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
         </Route>
 
         {/* Fallback 404 Route */}

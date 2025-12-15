@@ -9,14 +9,6 @@ interface YouTubePlayerProps {
     onError: (e: any) => void;
 }
 
-// Extract YouTube video ID from URL
-const getYouTubeID = (url: string): string | null => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-};
-
 const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ 
     url, 
     playing, 
@@ -26,16 +18,17 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 }) => {
     const [Player, setPlayer] = useState<any>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const videoId = getYouTubeID(url);
+
+    // Log the URL received by the component for debugging
+    console.log("YouTubePlayer received URL:", url);
 
     useEffect(() => {
-        console.log("YouTubePlayer: Loading react-player...");
+        // Use dynamic import to load the player at runtime
         import("react-player").then((mod) => {
-            console.log("YouTubePlayer: react-player loaded");
             setPlayer(() => mod.default);
         }).catch((err) => {
-            console.error("YouTubePlayer: Load error:", err);
-            setLoadError("Không thể tải player");
+            console.error("Failed to load react-player:", err);
+            setLoadError("Không thể tải trình phát video.");
             onError(err);
         });
     }, []);
@@ -47,12 +40,12 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             </div>
         );
     }
-
-    if (!videoId) {
-        console.error("YouTubePlayer: Invalid URL:", url);
+    
+    // Use the canPlay method (once the player is loaded) to check the URL
+    if (Player && !Player.canPlay(url)) {
         return (
             <div className="flex items-center justify-center h-full text-destructive">
-                <p>URL YouTube không hợp lệ</p>
+                <p>URL YouTube không hợp lệ hoặc không được hỗ trợ.</p>
             </div>
         );
     }
@@ -65,29 +58,17 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         );
     }
 
-    const embedUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    console.log("YouTubePlayer: Rendering", embedUrl, "Playing:", playing);
-    
+    // Pass the URL directly to the player
     return (
         <Player
-            url={embedUrl}
+            url={url}
             playing={playing}
             controls
             width="100%"
             height="100%"
-            onPlay={() => {
-                console.log("YouTubePlayer: onPlay");
-                onPlay();
-            }}
-            onPause={() => {
-                console.log("YouTubePlayer: onPause");
-                onPause();
-            }}
-            onError={(e: any) => {
-                console.error("YouTubePlayer: Error:", e);
-                onError(e);
-            }}
-            onReady={() => console.log("YouTubePlayer: Ready")}
+            onPlay={onPlay}
+            onPause={onPause}
+            onError={onError}
             style={{ position: 'absolute', top: 0, left: 0 }}
         />
     );

@@ -1,14 +1,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, UserCircle, LogOut, Compass, MessagesSquare, Search, Sparkles, Music } from 'lucide-react';
+import { ShieldCheck, UserCircle, LogOut, Newspaper, MessagesSquare, Search, Sparkles } from 'lucide-react'; // Changed Compass to Newspaper
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages'; // Import the new hook
+import { ModeToggle } from '../mode-toggle';
 
 const navLinks = [
-  { href: '/discover', label: 'Khám phá', icon: Compass },
+  { href: '/news', label: 'Tin tức', icon: Newspaper }, // Changed from /discover and Khám phá
   { href: '/browse', label: 'Tìm kiếm', icon: Search },
   { href: '/random-match', label: 'Ghép đôi', icon: Sparkles },
-  { href: '/music', label: 'Âm nhạc', icon: Music },
   { href: '/messages', label: 'Tin nhắn', icon: MessagesSquare, id: 'messages-link' }, // Add id for targeting
 ];
 
@@ -65,6 +65,7 @@ export const Header = () => {
 
         {/* Right Side: User Actions */}
         <div className="flex items-center gap-2">
+            <ModeToggle />
           {profile?.role === 'admin' && (
             <Button
               variant="ghost"

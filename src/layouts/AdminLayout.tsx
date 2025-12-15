@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Outlet, NavLink } from "react-router-dom";
-import { Loader2, Home, Music, Shield } from "lucide-react";
+import { Loader2, Newspaper, Shield } from "lucide-react"; // Changed Home, Music to Newspaper
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -36,14 +36,12 @@ const AdminLayout = () => {
             </NavLink>
           </div>
           <nav className="flex-1 grid items-start px-2 text-sm font-medium lg:px-4">
+            {/* Changed Dashboard to Article Management */}
             <NavLink to="/admin" end className={navLinkClass}>
-              <Home className="h-4 w-4" />
-              Bảng điều khiển
+              <Newspaper className="h-4 w-4" />
+              Quản lý Bài viết
             </NavLink>
-            <NavLink to="/admin/music" className={navLinkClass}>
-              <Music className="h-4 w-4" />
-              Quản lý Âm nhạc
-            </NavLink>
+            {/* Removed the old Music Management link */}
           </nav>
           <div className="mt-auto p-4">
              <Button size="sm" className="w-full" asChild>

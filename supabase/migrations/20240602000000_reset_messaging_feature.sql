@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS public.messages CASCADE;
-DROP TABLE IF EXISTS public.matches CASCADE;
