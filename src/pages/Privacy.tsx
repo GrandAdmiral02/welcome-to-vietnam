@@ -56,7 +56,7 @@ export default function Privacy() {
 
           <h2>5. Liên hệ với chúng tôi</h2>
           <p>
-            Nếu bạn có bất kỳ câu hỏi nào về Chính sách bảo mật này, vui lòng liên hệ với chúng tôi qua trang <a href="/contact" class="text-primary hover:underline">Liên hệ</a>.
+            Nếu bạn có bất kỳ câu hỏi nào về Chính sách bảo mật này, vui lòng liên hệ với chúng tôi qua trang <a href="/contact" className="text-primary hover:underline">Liên hệ</a>.
           </p>
         </CardContent>
       </Card>

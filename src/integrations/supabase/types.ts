@@ -169,6 +169,47 @@ export type Database = {
           },
         ]
       }
+      call_logs: {
+        Row: {
+          caller_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          match_id: string
+          receiver_id: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          caller_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          match_id: string
+          receiver_id: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          caller_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          match_id?: string
+          receiver_id?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
