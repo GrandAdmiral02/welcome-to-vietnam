@@ -36,6 +36,10 @@ import VoiceCallUI from '@/components/VoiceCallUI';
 import { motion, AnimatePresence } from 'framer-motion';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { useMessageReactions } from '@/hooks/useMessageReactions';
+import { MessageReactions, ReactionPicker } from '@/components/messages/MessageReactions';
+import { TypingIndicator } from '@/components/messages/TypingIndicator';
 
 // --- Interfaces ---
 interface Profile {
@@ -104,37 +108,21 @@ const OnlineStatus = ({ lastActive }: { lastActive?: string }) => {
   const isOnline = lastActive && (new Date().getTime() - new Date(lastActive).getTime()) < 5 * 60 * 1000;
   
   return (
-    <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-background ${isOnline ? 'bg-green-500' : 'bg-muted-foreground/50'}`} />
+    <motion.span 
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-background ${isOnline ? 'bg-green-500' : 'bg-muted-foreground/50'}`}
+    >
+      {isOnline && (
+        <motion.span
+          className="absolute inset-0 rounded-full bg-green-500"
+          animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      )}
+    </motion.span>
   );
 };
-
-// Typing indicator component
-const TypingIndicator = () => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 10 }}
-    className="flex items-center gap-2 px-4 py-2"
-  >
-    <div className="flex items-center gap-1 bg-muted rounded-full px-4 py-2">
-      <motion.span
-        className="w-2 h-2 bg-muted-foreground/60 rounded-full"
-        animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-      />
-      <motion.span
-        className="w-2 h-2 bg-muted-foreground/60 rounded-full"
-        animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-      />
-      <motion.span
-        className="w-2 h-2 bg-muted-foreground/60 rounded-full"
-        animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-      />
-    </div>
-  </motion.div>
-);
 
 // --- Main Component ---
 const MessagesPage = () => {
@@ -151,8 +139,8 @@ const MessagesPage = () => {
   const [retractionTarget, setRetractionTarget] = useState<Message | null>(null);
   const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(new Set());
   const [matchToDelete, setMatchToDelete] = useState<Match | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -160,6 +148,19 @@ const MessagesPage = () => {
 
   // Voice call hook
   const { callState, startCall, acceptCall, rejectCall, endCall } = useVoiceCall();
+
+  // Typing indicator hook
+  const { typingUsers, handleTyping, stopTyping } = useTypingIndicator(
+    selectedMatch?.id || null,
+    user?.id || null,
+    profile?.full_name || null
+  );
+
+  // Message reactions hook
+  const { getReactionsForMessage, toggleReaction } = useMessageReactions(
+    selectedMatch?.id || null,
+    user?.id || null
+  );
 
   const fetchMatches = useCallback(async () => {
     if (!user) return;
@@ -323,6 +324,7 @@ const MessagesPage = () => {
     
     const messageContent = newMessage.trim();
     setNewMessage('');
+    stopTyping();
     
     await supabase.from('messages').insert({
       match_id: selectedMatch.id,
@@ -411,6 +413,11 @@ const MessagesPage = () => {
     inputRef.current?.focus();
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    handleTyping();
+  };
+
   const visibleMessages = messages.filter(msg => !deletedForMeIds.has(msg.id));
 
   if (loading) {
@@ -440,26 +447,26 @@ const MessagesPage = () => {
         onEnd={endCall}
       />
 
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen bg-gradient-to-br from-background via-background to-primary/5">
         {/* --- Sidebar with Conversation List --- */}
         <motion.aside 
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           className={`w-full md:w-96 border-r border-border/50 flex flex-col bg-card/50 backdrop-blur-sm ${selectedMatch ? 'hidden md:flex' : 'flex'}`}
         >
-          <header className="p-4 border-b border-border/50">
+          <header className="p-4 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm">
                 <MessageCircle className="w-6 h-6 text-primary" />
               </div>
-              Tin nhắn
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Tin nhắn</span>
             </h2>
           </header>
           
           <ScrollArea className="flex-1">
             {matches.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 shadow-inner">
                   <MessageCircle className="w-10 h-10 text-muted-foreground" />
                 </div>
                 <h3 className="font-semibold text-lg">Chưa có cuộc trò chuyện</h3>
@@ -478,11 +485,11 @@ const MessagesPage = () => {
                     className="relative group"
                     onClick={() => setSelectedMatch(match)}
                   >
-                    <div className={`flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${selectedMatch?.id === match.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''}`}>
+                    <div className={`flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${selectedMatch?.id === match.id ? 'bg-gradient-to-r from-primary/10 to-transparent border-l-4 border-l-primary' : ''}`}>
                       <div className="relative">
-                        <Avatar className="w-14 h-14 ring-2 ring-border">
+                        <Avatar className="w-14 h-14 ring-2 ring-border shadow-md">
                           <AvatarImage src={match.other_user.avatar_url} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-semibold">
                             {match.other_user.full_name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
@@ -507,9 +514,13 @@ const MessagesPage = () => {
                       </div>
                       
                       {(match.unreadCount ?? 0) > 0 && (
-                        <span className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-primary text-primary-foreground text-xs font-bold px-1.5">
+                        <motion.span 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-primary text-primary-foreground text-xs font-bold px-1.5 shadow-md"
+                        >
                           {match.unreadCount}
-                        </span>
+                        </motion.span>
                       )}
                     </div>
                     
@@ -549,7 +560,7 @@ const MessagesPage = () => {
               <motion.header 
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="flex items-center gap-4 p-4 border-b border-border/50 bg-card/50 backdrop-blur-sm"
+                className="flex items-center gap-4 p-4 border-b border-border/50 bg-gradient-to-r from-card/80 to-card/50 backdrop-blur-sm"
               >
                 <Button 
                   variant="ghost" 
@@ -561,9 +572,9 @@ const MessagesPage = () => {
                 </Button>
                 
                 <div className="relative">
-                  <Avatar className="w-12 h-12 ring-2 ring-border">
+                  <Avatar className="w-12 h-12 ring-2 ring-border shadow-md">
                     <AvatarImage src={selectedMatch.other_user.avatar_url} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
                       {selectedMatch.other_user.full_name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -572,13 +583,33 @@ const MessagesPage = () => {
                 
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{selectedMatch.other_user.full_name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedMatch.other_user.last_active && (
-                      new Date().getTime() - new Date(selectedMatch.other_user.last_active).getTime() < 5 * 60 * 1000
-                        ? 'Đang hoạt động'
-                        : `Hoạt động ${formatDistanceToNow(new Date(selectedMatch.other_user.last_active), { addSuffix: true, locale: vi })}`
+                  <AnimatePresence mode="wait">
+                    {typingUsers.length > 0 ? (
+                      <motion.p 
+                        key="typing"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="text-sm text-primary font-medium"
+                      >
+                        Đang nhập...
+                      </motion.p>
+                    ) : (
+                      <motion.p 
+                        key="status"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {selectedMatch.other_user.last_active && (
+                          new Date().getTime() - new Date(selectedMatch.other_user.last_active).getTime() < 5 * 60 * 1000
+                            ? 'Đang hoạt động'
+                            : `Hoạt động ${formatDistanceToNow(new Date(selectedMatch.other_user.last_active), { addSuffix: true, locale: vi })}`
+                        )}
+                      </motion.p>
                     )}
-                  </p>
+                  </AnimatePresence>
                 </div>
                 
                 <Button
@@ -593,7 +624,7 @@ const MessagesPage = () => {
               </motion.header>
 
               {/* Messages Area */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-transparent to-muted/10">
                 {loadingMessages ? (
                   <div className="flex h-full items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -607,6 +638,8 @@ const MessagesPage = () => {
                           index === 0 || 
                           visibleMessages[index - 1]?.sender_id !== msg.sender_id
                         );
+                        const reactions = getReactionsForMessage(msg.id);
+                        const isHovered = hoveredMessageId === msg.id;
                         
                         return (
                           <motion.div
@@ -616,13 +649,15 @@ const MessagesPage = () => {
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
                             className={`group flex items-end gap-2 ${isSender ? 'justify-end' : 'justify-start'}`}
+                            onMouseEnter={() => setHoveredMessageId(msg.id)}
+                            onMouseLeave={() => setHoveredMessageId(null)}
                           >
                             {!isSender && (
                               <div className="w-8">
                                 {showAvatar && (
-                                  <Avatar className="w-8 h-8">
+                                  <Avatar className="w-8 h-8 shadow-sm">
                                     <AvatarImage src={selectedMatch.other_user.avatar_url} />
-                                    <AvatarFallback className="text-xs">
+                                    <AvatarFallback className="text-xs bg-gradient-to-br from-primary/20 to-primary/5">
                                       {selectedMatch.other_user.full_name?.charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>
@@ -630,22 +665,30 @@ const MessagesPage = () => {
                               </div>
                             )}
                             
+                            {/* Actions for sender messages */}
                             {isSender && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="w-7 h-7 opacity-0 group-hover:opacity-100 transition-opacity" 
-                                onClick={() => setRetractionTarget(msg)}
-                              >
-                                <Trash2 className="w-4 h-4 text-muted-foreground" />
-                              </Button>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ReactionPicker
+                                  isVisible={isHovered}
+                                  onSelectReaction={(emoji) => toggleReaction(msg.id, emoji)}
+                                />
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="w-7 h-7" 
+                                  onClick={() => setRetractionTarget(msg)}
+                                >
+                                  <Trash2 className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                              </div>
                             )}
                             
                             <div className={`relative max-w-[70%] ${isSender ? 'order-1' : ''}`}>
-                              <div className={`px-4 py-2.5 rounded-2xl ${
+                              {/* Message Bubble */}
+                              <div className={`px-4 py-2.5 rounded-2xl shadow-sm ${
                                 isSender 
-                                  ? 'bg-primary text-primary-foreground rounded-br-md' 
-                                  : 'bg-muted rounded-bl-md'
+                                  ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-br-md' 
+                                  : 'bg-gradient-to-br from-muted to-muted/80 rounded-bl-md border border-border/30'
                               }`}>
                                 {msg.type === 'image' ? (
                                   <ImageMessage path={msg.content} />
@@ -654,6 +697,14 @@ const MessagesPage = () => {
                                 )}
                               </div>
                               
+                              {/* Reactions Display */}
+                              <MessageReactions
+                                reactions={reactions}
+                                onToggleReaction={(emoji) => toggleReaction(msg.id, emoji)}
+                                isSender={isSender}
+                              />
+                              
+                              {/* Time and Read Status */}
                               <div className={`flex items-center gap-1 mt-1 ${isSender ? 'justify-end' : 'justify-start'}`}>
                                 <span className="text-[10px] text-muted-foreground">
                                   {format(new Date(msg.created_at), 'HH:mm')}
@@ -665,13 +716,23 @@ const MessagesPage = () => {
                                 )}
                               </div>
                             </div>
+                            
+                            {/* Actions for received messages */}
+                            {!isSender && (
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ReactionPicker
+                                  isVisible={isHovered}
+                                  onSelectReaction={(emoji) => toggleReaction(msg.id, emoji)}
+                                />
+                              </div>
+                            )}
                           </motion.div>
                         );
                       })}
                     </AnimatePresence>
                     
                     <AnimatePresence>
-                      {isTyping && <TypingIndicator />}
+                      {typingUsers.length > 0 && <TypingIndicator typingUsers={typingUsers} />}
                     </AnimatePresence>
                     
                     <div ref={messagesEndRef} />
@@ -683,13 +744,13 @@ const MessagesPage = () => {
               <motion.footer 
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="p-4 border-t border-border/50 bg-card/50 backdrop-blur-sm"
+                className="p-4 border-t border-border/50 bg-gradient-to-r from-card/80 to-card/50 backdrop-blur-sm"
               >
                 <div className="flex items-center gap-2">
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="rounded-full shrink-0"
+                    className="rounded-full shrink-0 hover:bg-primary/10"
                     onClick={() => fileInputRef.current?.click()} 
                     disabled={isUploading}
                   >
@@ -706,7 +767,7 @@ const MessagesPage = () => {
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        className="rounded-full shrink-0"
+                        className="rounded-full shrink-0 hover:bg-primary/10"
                       >
                         <Smile className="w-5 h-5 text-muted-foreground" />
                       </Button>
@@ -726,16 +787,16 @@ const MessagesPage = () => {
                   <Input 
                     ref={inputRef}
                     value={newMessage} 
-                    onChange={(e) => setNewMessage(e.target.value)} 
+                    onChange={handleInputChange} 
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} 
                     placeholder="Nhập tin nhắn..." 
-                    className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-1 focus-visible:ring-primary"
+                    className="flex-1 rounded-full bg-muted/50 border-border/30 focus-visible:ring-1 focus-visible:ring-primary shadow-sm"
                   />
                   
                   <Button 
                     onClick={handleSendMessage} 
                     disabled={!newMessage.trim()}
-                    className="rounded-full w-11 h-11 p-0 shrink-0"
+                    className="rounded-full w-11 h-11 p-0 shrink-0 shadow-md bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
                   >
                     <Send className="w-5 h-5" />
                   </Button>
@@ -743,13 +804,13 @@ const MessagesPage = () => {
               </motion.footer>
             </>
           ) : (
-            <div className="flex-1 hidden md:flex items-center justify-center">
+            <div className="flex-1 hidden md:flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center"
               >
-                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <MessageCircle className="w-12 h-12 text-primary" />
                 </div>
                 <h3 className="text-2xl font-semibold">Chọn một cuộc trò chuyện</h3>
