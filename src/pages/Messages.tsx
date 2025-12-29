@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ArrowLeft, Send, MessageCircle, Loader2, Image as ImageIcon, Trash2, MoreHorizontal, Phone, Smile, Check, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, Loader2, Image as ImageIcon, Trash2, MoreHorizontal, Phone, Smile, Check, CheckCheck, Reply } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { v4 as uuidv4 } from 'uuid';
@@ -40,6 +40,7 @@ import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { useMessageReactions } from '@/hooks/useMessageReactions';
 import { MessageReactions, ReactionPicker } from '@/components/messages/MessageReactions';
 import { TypingIndicator } from '@/components/messages/TypingIndicator';
+import { ReplyPreview, QuotedMessage } from '@/components/messages/ReplyPreview';
 
 // --- Interfaces ---
 interface Profile {
@@ -64,6 +65,14 @@ interface Message {
   created_at: string;
   type: 'text' | 'image';
   is_read: boolean;
+  reply_to_id?: string | null;
+}
+
+interface ReplyTo {
+  id: string;
+  content: string;
+  sender_name: string;
+  type: 'text' | 'image';
 }
 
 // --- Helper Components ---
@@ -141,6 +150,7 @@ const MessagesPage = () => {
   const [matchToDelete, setMatchToDelete] = useState<Match | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -323,7 +333,9 @@ const MessagesPage = () => {
     if (!newMessage.trim() || !selectedMatch || !user?.id) return;
     
     const messageContent = newMessage.trim();
+    const replyToId = replyTo?.id || null;
     setNewMessage('');
+    setReplyTo(null);
     stopTyping();
     
     await supabase.from('messages').insert({
@@ -331,8 +343,39 @@ const MessagesPage = () => {
       sender_id: user.id,
       recipient_id: selectedMatch.other_user.user_id,
       content: messageContent,
-      type: 'text'
+      type: 'text',
+      reply_to_id: replyToId
+    } as any);
+  };
+
+  const handleReply = (msg: Message) => {
+    const senderName = msg.sender_id === user?.id 
+      ? 'chính mình' 
+      : selectedMatch?.other_user.full_name || 'Người dùng';
+    
+    setReplyTo({
+      id: msg.id,
+      content: msg.content,
+      sender_name: senderName,
+      type: msg.type
     });
+    inputRef.current?.focus();
+  };
+
+  const scrollToMessage = (messageId: string) => {
+    const element = document.getElementById(`message-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+      }, 2000);
+    }
+  };
+
+  const getReplyMessage = (replyToId: string | null | undefined): Message | undefined => {
+    if (!replyToId) return undefined;
+    return messages.find(m => m.id === replyToId);
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -641,14 +684,20 @@ const MessagesPage = () => {
                         const reactions = getReactionsForMessage(msg.id);
                         const isHovered = hoveredMessageId === msg.id;
                         
+                        const replyMessage = getReplyMessage((msg as any).reply_to_id);
+                        const replyMessageSenderName = replyMessage 
+                          ? (replyMessage.sender_id === user?.id ? 'Bạn' : selectedMatch.other_user.full_name)
+                          : '';
+                        
                         return (
                           <motion.div
                             key={msg.id}
+                            id={`message-${msg.id}`}
                             initial={{ opacity: 0, y: 20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
-                            className={`group flex items-end gap-2 ${isSender ? 'justify-end' : 'justify-start'}`}
+                            className={`group flex items-end gap-2 transition-all duration-300 ${isSender ? 'justify-end' : 'justify-start'}`}
                             onMouseEnter={() => setHoveredMessageId(msg.id)}
                             onMouseLeave={() => setHoveredMessageId(null)}
                           >
@@ -668,6 +717,14 @@ const MessagesPage = () => {
                             {/* Actions for sender messages */}
                             {isSender && (
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="w-7 h-7"
+                                  onClick={() => handleReply(msg)}
+                                >
+                                  <Reply className="w-4 h-4 text-muted-foreground" />
+                                </Button>
                                 <ReactionPicker
                                   isVisible={isHovered}
                                   onSelectReaction={(emoji) => toggleReaction(msg.id, emoji)}
@@ -690,6 +747,17 @@ const MessagesPage = () => {
                                   ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-br-md' 
                                   : 'bg-gradient-to-br from-muted to-muted/80 rounded-bl-md border border-border/30'
                               }`}>
+                                {/* Quoted Message */}
+                                {replyMessage && (
+                                  <QuotedMessage
+                                    content={replyMessage.content}
+                                    senderName={replyMessageSenderName || 'Người dùng'}
+                                    type={replyMessage.type}
+                                    isSender={isSender}
+                                    onClick={() => scrollToMessage(replyMessage.id)}
+                                  />
+                                )}
+                                
                                 {msg.type === 'image' ? (
                                   <ImageMessage path={msg.content} />
                                 ) : (
@@ -724,6 +792,14 @@ const MessagesPage = () => {
                                   isVisible={isHovered}
                                   onSelectReaction={(emoji) => toggleReaction(msg.id, emoji)}
                                 />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="w-7 h-7"
+                                  onClick={() => handleReply(msg)}
+                                >
+                                  <Reply className="w-4 h-4 text-muted-foreground" />
+                                </Button>
                               </div>
                             )}
                           </motion.div>
@@ -739,6 +815,16 @@ const MessagesPage = () => {
                   </div>
                 )}
               </ScrollArea>
+
+              {/* Reply Preview */}
+              <AnimatePresence>
+                {replyTo && (
+                  <ReplyPreview
+                    replyToMessage={replyTo}
+                    onCancelReply={() => setReplyTo(null)}
+                  />
+                )}
+              </AnimatePresence>
 
               {/* Message Input */}
               <motion.footer 
